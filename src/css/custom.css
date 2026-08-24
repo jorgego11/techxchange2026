@@ -1,0 +1,98 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+/* You can override the default Infima variables here. */
+:root {
+  --ifm-color-primary: #0047ff;
+  --ifm-color-primary-dark: #002d9c;
+  --ifm-color-primary-darker: #001d6c;
+  --ifm-color-primary-darkest: #001141;
+  --ifm-color-primary-light: #4589ff;
+  --ifm-color-primary-lighter: #78a9ff;
+  --ifm-color-primary-lightest: #a6c8ff;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+
+  --correct-code-highlight-main: #e6f6e6;
+  --correct-code-highlight-accent: #003100;
+
+  --emphasis-code-highlight-main: #fff8e6;
+  --emphasis-code-highlight-accent: #e6a700;
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme="dark"] {
+  --ifm-color-primary: #25c2a0;
+  --ifm-color-primary-dark: #21af90;
+  --ifm-color-primary-darker: #1a8870;
+  --ifm-color-primary-darkest: #135a4b;
+  --ifm-color-primary-light: #29d5b0;
+  --ifm-color-primary-lighter: #32d8b4;
+  --ifm-color-primary-lightest: #4fddbf;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+
+  --correct-code-highlight-main: #003100;
+  --correct-code-highlight-accent: #009400;
+
+  --emphasis-code-highlight-main: #4d3800;
+  --emphasis-code-highlight-accent: #e6a700;
+}
+
+.code-block-error-line {
+  background-color: #ff000020;
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+  border-left: 3px solid #ff000080;
+}
+
+.code-block-correct-line {
+  background-color: var(--correct-code-highlight-main);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+  border-left: 3px solid var(--correct-code-highlight-accent);
+}
+
+.code-block-emphasis-line {
+  background-color: var(--emphasis-code-highlight-main);
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+  border-left: 3px solid var(--emphasis-code-highlight-accent);
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.wip-docs {
+  display: none !important;
+}
+
+/* Increase navbar logo size and crop whitespace */
+.navbar__brand .navbar__logo {
+  height: 25px;
+  width: auto;
+  margin-right: 15px;
+}
+
+/* Light mode styling for the rect */
+.docusaurus-mermaid-container svg rect[fill="hotpink"] {
+  fill: var(--ifm-color-primary-lightest) !important;
+  stroke: var(--ifm-color-primary-dark) !important;
+}
+
+/* Dark mode styling for the rect */
+html[data-theme="dark"] .docusaurus-mermaid-container svg rect[fill="hotpink"] {
+  fill: var(--ifm-color-primary-darkest) !important;
+  stroke: var(--ifm-color-primary-lightest) !important;
+}

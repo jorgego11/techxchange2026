@@ -1,0 +1,127 @@
+---
+title: 6. Summary
+sidebar_position: 6
+---
+
+# Summary
+
+You have completed the IBM Concert WebSphere vulnerability management lab. You
+took a WebSphere Liberty server all the way through the vulnerability lifecycle,
+from registration to a confirmed patch.
+
+## What you accomplished
+
+- **Set up** the WebSphere vulnerability workflows, authentications, and
+  scheduled jobs in IBM Concert.
+- **Registered** a WebSphere Liberty 24.0.0.6 server so Concert could manage it.
+- **Discovered** the software installed on the server.
+- **Assessed** it against IBM WebSphere security advisories and found **11
+  CVEs**.
+- **Remediated** the findings by approving and applying the recommended
+  **26.0.0.7 Liberty fixpack**.
+- **Verified** the server upgraded from 24.0.0.6 to 26.0.0.7, remediating all
+  11 CVEs and reducing risk by 100%.
+
+## The vulnerability lifecycle, recapped
+
+| Stage | What Concert did |
+|---|---|
+| Register | Added the Liberty server to the software inventory. |
+| Discover | Inventoried the installed WebSphere software and versions. |
+| Retrieve advisories | Pulled the latest IBM WebSphere security advisories. |
+| Assess | Compared inventory against advisories, found 11 CVEs. |
+| Generate action | Created a remediation action recommending the 26.0.0.7 fixpack. |
+| Approve and schedule | You approved and scheduled the upgrade. |
+| Remediate | Downloaded the fixpack from Fix Central and applied it via Ansible. |
+| Verify and reassess | Confirmed 26.0.0.7 and reassessed the patched server. |
+
+## Troubleshooting reference
+
+If you run into problems, these are the most common causes and their fixes.
+
+### Registration fails at discovery
+
+If registration fails with "No WebSphere application servers found" or the
+software inventory stays at 0:
+
+- Confirm Concert can reach the Liberty server over SSH without a password. Add
+  Concert's public key (from the **Get public key** step) to
+  `/root/.ssh/authorized_keys` on the target.
+- Register by **hostname**, not by IP address.
+- Confirm the **Path** is the server directory that contains `server.xml`
+  (`/opt/IBM/wlp/usr/servers/defaultServer`).
+- Confirm `concert_config_auth` holds the full **Config Data** JSON (host, port,
+  instanceId, Authorization, private_key, public_key), not just a key value.
+
+### Scheduling the remediation fails
+
+When configuring `Monitor_Remediation_Action_Status`:
+
+- A `404 - Audited flow does not exist` error means the `wf_to_schedule` path is
+  wrong. It must include the `User/` segment:
+  `ibmconcert/User/Websphere_Remediation_Master/Websphere_Remediation_Main`.
+- A `500 - Request method 'POST' is not supported` error means a required input
+  is empty. Set `workflow_auth` to `ibmconcert/workflow_auth` and
+  `workflow_user` to `ibmconcert`.
+
+### The remediation action won't re-run
+
+If a remediation action is stuck and the scheduled window has already passed:
+
+- The remediation workflow only acts on actions with a **scheduled** status and
+  a future window. Re-approve the action with a new time at least 10 minutes in
+  the future, or run the assessment to generate a fresh action, then approve
+  and schedule that one.
+
+### The install fails at the end (return code 2, no output)
+
+If the download and authentication succeed but the final install step fails
+instantly:
+
+- On IBM Concert 3.0.x the fixpack installs by running **Ansible on the target
+  server**. Confirm `ansible-playbook` is installed on the Liberty server:
+
+  ```bash
+  which ansible-playbook
+  ```
+
+  If it is missing, install it and re-run the remediation:
+
+  ```bash
+  dnf install -y ansible-core
+  ```
+
+### The fixpack download fails
+
+If the download step produces nothing in `/tmp/tempFixes`:
+
+- Check the `sw_update_auth_key` authentication. The IBM Fix Central username
+  and password must be correct, and the account must be entitled to download
+  WebSphere fixes. Because the fields are **Overridable**, you can correct them
+  in place.
+
+### The UI doesn't reflect the patch right away
+
+After patching, the Action Center or Vulnerability view may lag:
+
+- Concert reassesses on an interval. Give it an assessment cycle, or run
+  **Websphere_Assessment_Workflow** and wait. The server version on the target
+  (`26.0.0.7`) is the definitive confirmation that the patch worked.
+
+## Cleanup
+
+When you are done with the lab environment:
+
+- Remove the registered WebSphere server from **Software inventory** if you want
+  to reset for another run.
+- Rotate any credentials that were used during setup as good hygiene. Do **not**
+  rotate the Concert API key while servers are still registered, or you will
+  have to register them again.
+
+## What you learned
+
+You now understand how IBM Concert manages WebSphere vulnerabilities end to end:
+how it discovers what software is running, assesses it against published
+advisories, recommends and applies officially supported fixes, and monitors the
+result. This same lifecycle applies across your registered WebSphere estate, and
+Concert repeats it continuously as new advisories are published.

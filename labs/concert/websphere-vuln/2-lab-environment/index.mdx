@@ -1,0 +1,106 @@
+---
+title: 2. Lab Environment
+sidebar_position: 2
+---
+
+# Lab Environment
+
+This lab uses two virtual machines. One runs **IBM Concert**, and the other runs
+a **WebSphere Liberty** server that acts as the vulnerable target. Concert
+connects to the Liberty server over SSH to discover, assess, and patch it.
+
+## The two servers
+
+### IBM Concert server
+
+This is where Concert runs and where you spend most of your time in the browser.
+
+| Property | Value |
+|---|---|
+| Product | IBM Concert 3.0.0 |
+| Operating system | Red Hat Enterprise Linux 9 |
+| Hostname | `concert-v3-auto71.fyre.ibm.com` |
+| Concert UI | `https://concert-v3-auto71.fyre.ibm.com:12443/concert` |
+| Login | `ibmconcert` / `Passw0rd` |
+| Concert port | `12443` |
+| SSH port | `22` |
+
+Concert runs a small Kubernetes cluster internally. A **default worker group**
+holds the workers that run the WebSphere workflows and make the SSH connections
+out to the target server. You do not need to manage the cluster directly, but
+it is useful to know that the workflows execute there.
+
+### WebSphere Liberty target server
+
+This is the server Concert manages. It starts out running an older WebSphere
+Liberty version with known vulnerabilities, which is what makes it a good
+demonstration target.
+
+| Property | Value |
+|---|---|
+| Product | WebSphere Liberty 24.0.0.6 (liberty_core) |
+| Operating system | Red Hat Enterprise Linux 9 |
+| Hostname | `os-patch-rhel1.fyre.ibm.com` |
+| Server name | `defaultServer` |
+| Service | systemd unit `liberty@defaultServer` (active/running) |
+| HTTP endpoint | port `9080` |
+| Install path | `/opt/IBM/wlp` |
+| Server directory (contains `server.xml`) | `/opt/IBM/wlp/usr/servers/defaultServer` |
+
+IBM Installation Manager is pre-installed on this server. Concert uses it,
+together with Ansible, to apply fixpacks during remediation.
+
+:::note
+The install path uses an uppercase `IBM`: `/opt/IBM/wlp`. Some general WebSphere
+documentation shows a lowercase `/opt/ibm/wlp`. Use the exact path above for
+this lab.
+:::
+
+## How the servers connect
+
+The connection flow for this lab looks like this:
+
+```
+  You (browser + SSH)
+        |
+        v
+  IBM Concert  ---- SSH ---->  WebSphere Liberty target
+  (concert-v3-auto71)          (os-patch-rhel1)
+        |
+        +---- HTTPS ---->  IBM Fix Central (downloads fixpacks)
+```
+
+- You reach both the **Concert UI** and the two VMs from your workstation over
+  the IBM VPN.
+- Concert reaches the **Liberty target** over SSH. This connection is what lets
+  Concert discover the installed software and, later, apply patches.
+- During remediation, Concert reaches out to **IBM Fix Central** over HTTPS to
+  download the recommended fixpack.
+
+![Architecture diagram showing the Bastion Host connecting to IBM Concert, Concert communicating with IBM Bob, Concert reaching the WebSphere Liberty target over SSH to discover, assess, and patch it, and Concert downloading the fixpack from IBM Fix Central over HTTPS](./images/architecture-diagram.png)
+
+## Deployment type: non-FaaS
+
+Concert supports two execution models for the WebSphere workflows:
+Function-as-a-Service (FaaS) and non-FaaS. This lab uses the **non-FaaS** path.
+When you import the workflows, you will skip every workflow whose name ends in
+`_Faas`, and you will create the non-FaaS execution authentication
+(`concert_ansible_auth`) rather than the FaaS one.
+
+## Before you begin
+
+Make sure you have:
+
+- The **IBM VPN** connected. Both VMs are on IBM Fyre and are only reachable
+  over the VPN.
+- **SSH access** to both VMs as `root`. You connect with
+  `ssh root@concert-v3-auto71.fyre.ibm.com` and
+  `ssh root@os-patch-rhel1.fyre.ibm.com`.
+- Access to the **Concert UI** in a browser at the URL above.
+- **IBM Fix Central credentials** (your IBM ID and password). You will need
+  these later for the remediation step, when Concert downloads the fixpack. If
+  you do not have Fix Central access yet, you can still complete everything up
+  to remediation.
+
+In the next section you will verify your connectivity and prepare the
+environment.

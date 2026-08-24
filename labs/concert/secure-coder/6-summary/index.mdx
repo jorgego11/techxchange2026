@@ -1,0 +1,63 @@
+---
+title: 6. Lab Summary
+sidebar_label: 6. Lab Summary
+sidebar_position: 6
+---
+
+# 6. Lab Summary
+
+## The Value of IBM Concert for SAST
+
+Static application security testing has traditionally sat at the wrong end of the development cycle. A vulnerability written on Monday surfaces in a pipeline scan on Thursday, gets triaged into a ticket the following week, and is fixed by a developer who has long since moved on to other work. Every step in that chain adds cost, context-switching, and risk.
+
+IBM Concert Secure Coder moves that entire loop into the editor. In this lab you saw a vulnerability detected, explained, remediated, and verified — all before a single commit was made.
+
+### What you did
+
+**Section 4 — Install and Configure Concert Secure Coder**
+
+- Located the Concert Secure Coder card under the **Protect** tab and generated an API key
+- Downloaded the extension VSIX from the GitHub Enterprise releases page
+- Installed Visual Studio Code on the Bastion and installed the extension from the VSIX
+- Authenticated the extension through w3id single sign-on
+- Downloaded and opened the demo repository as a trusted workspace
+
+**Section 5 — Vulnerability Patch Workflow**
+
+- Ran a **Code Scan** against a vulnerable JavaScript file and reviewed findings from Semgrep and Detect Secrets
+- Applied an AI-generated remediation with **Fix with AI**, reviewed the change, corrected a defect it introduced, and rescanned
+- Remediated an exposed secret manually by moving it to an environment variable, and confirmed a clean scan
+- Ran a repository-wide **Mend SAST Scan**, reviewed a CWE-classified finding in full detail, applied its written recommendation, and verified the fix
+- Ran a **Mend OSS Scan** and compared the dependency attack surface against the source code attack surface
+- Reviewed the settings that govern scan behavior, automatic scanning, and fix confidence
+
+### What the scans showed
+
+| Scan | Scope | Findings in this lab |
+|---|---|---|
+| Semgrep | Active file | Missing CSRF middleware, hard-coded credential |
+| Detect Secrets | Active file | Exposed private key |
+| Mend SAST | Repository | 1 Medium (CWE-798), 2 Low |
+| Mend OSS | Repository | 7 Critical, 41 High, 38 Medium, 3 Low |
+
+Three findings in the source code. Eighty-nine in the dependency tree. Neither view is complete on its own, and both are available to the developer in the same panel.
+
+### Key takeaways
+
+**Shift left is a location, not a slogan.** The cheapest moment to fix a vulnerability is the moment it is written. Secure Coder puts the finding in the editor, next to the line that caused it, with the file and line number already resolved.
+
+**AI-assisted remediation is developer-in-the-loop.** The CSRF fix in section 5 was correct in intent and wrong in placement — it declared the same `const` twice and broke the file. The confidence score tells you how sure the model is, not whether the change is safe to keep. Always read a generated fix, and always rescan afterward.
+
+**Not every finding gets an AI fix.** Semgrep findings offer **Fix with AI**. Detect Secrets and Mend SAST findings give you a written recommendation to apply yourself. For secrets, that remediation is nearly always the same: move the value out of source and read it from an environment variable.
+
+**A rescan reflects exactly what changed.** The two Low findings left in place after the Mend SAST remediation are proof that the scanner is measuring your code, not clearing the board.
+
+**Dependencies are where the volume is.** Software composition analysis is not optional. The overwhelming majority of vulnerabilities in a typical Node.js project ship in code nobody on the team wrote.
+
+================================
+
+## Congratulations! You have completed the Lab
+
+We encourage you to provide feedback on this lab to help us improve future versions. Tell us what you liked, what you didn't like, and any suggestions for improvement. You can provide feedback on the Slack channel listed under the [Support section](https://techzone.ibm.com/collection/jam-in-a-box-for-aiops).
+
+================================

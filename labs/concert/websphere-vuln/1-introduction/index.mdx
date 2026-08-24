@@ -1,0 +1,85 @@
+---
+title: 1. Introduction
+sidebar_position: 1
+---
+
+# Managing WebSphere Vulnerabilities with IBM Concert Protect
+
+Welcome to the IBM Concert WebSphere vulnerability management lab. In this
+hands-on lab you will use IBM Concert to find and fix security vulnerabilities
+on a WebSphere server, end to end, the same way an operations or security team
+would in production.
+
+## What is IBM Concert?
+
+IBM Concert is an operations platform that gives teams a single place to see
+and manage the health, risk, and compliance of their applications and
+infrastructure. One of the things it does well is **vulnerability management**:
+it looks at the software you actually have running, compares it against the
+latest published security advisories, tells you which known vulnerabilities
+(CVEs) affect you, and then helps you remediate them in a controlled,
+automated way.
+
+This lab focuses on that vulnerability lifecycle for **IBM WebSphere**, using
+WebSphere Liberty as the target server.
+
+## What you will do
+
+By the end of this lab you will have taken a WebSphere Liberty server all the
+way through the Concert vulnerability lifecycle:
+
+1. **Set up** the Concert workflows, authentications, and scheduled jobs that
+   power WebSphere vulnerability management.
+2. **Register** a WebSphere Liberty server so Concert can manage it.
+3. **Discover** the software installed on that server.
+4. **Assess** it against the latest IBM WebSphere security advisories to find
+   applicable CVEs.
+5. **Remediate** the findings by applying an officially supported fixpack.
+6. **Monitor** the remediation and confirm the server is patched.
+
+You will be working with two virtual machines: an **IBM Concert** server and a
+**WebSphere Liberty** server that acts as the "vulnerable" target. Concert
+discovers, assesses, and patches the Liberty box for you.
+
+## How WebSphere vulnerability management works
+
+WebSphere vulnerability management in IBM Concert follows a continuous
+lifecycle. Concert repeats this loop on a schedule so that newly published
+vulnerabilities are caught as they appear.
+
+| Stage | What happens |
+|---|---|
+| **Set up workflows** | Configure the workflows, authentications, and scheduled jobs that enable assessment and remediation. |
+| **Register server** | Add the WebSphere Liberty (or traditional WebSphere) instance so Concert can inventory, assess, and remediate it. |
+| **Discover software** | Concert inventories the installed WebSphere software, Java runtime (JDK) components, versions, and fix levels. |
+| **Retrieve advisories** | Concert refreshes its WebSphere security advisory data from IBM. |
+| **Assess vulnerabilities** | Concert compares the discovered inventory against the advisory data to find affected servers. |
+| **Generate remediation actions** | When a supported fix exists, Concert creates a remediation action recommending a fixpack or interim fix. |
+| **Review and approve** | You review the recommended fix, then approve and schedule it for a maintenance window. |
+| **Apply remediation** | Concert downloads the fix from IBM Fix Central and applies it to the server. |
+| **Monitor and reassess** | Concert tracks the remediation, then reassesses the patched server. |
+
+## Supported WebSphere environments
+
+Concert supports vulnerability management for the following WebSphere
+environments. This lab uses WebSphere Liberty.
+
+| Environment | Supported versions |
+|---|---|
+| WebSphere Application Server (all editions) | 8.5.5.15 and later |
+| WebSphere Application Server (all editions) | 9.0.0.9 and later |
+| WebSphere Application Server Deployment Manager | 8.5.5.23 and later |
+| WebSphere Application Server Deployment Manager | 9.0.5.14 and later |
+| WebSphere Liberty (all editions) | 18.0.0.3 and later |
+
+## What's next
+
+In the next section you will get familiar with the two lab virtual machines and
+how they connect to each other. From there you will prepare your environment,
+set up the Concert workflows, register the WebSphere server, and work through
+the full assess-and-remediate loop.
+
+:::info
+This lab is written for **IBM Concert 3.0.x**. Screens and workflow names may
+differ slightly on other versions.
+:::

@@ -1,0 +1,177 @@
+---
+title: 5. Patching Vulnerabilities
+sidebar_position: 5
+---
+
+# Patching Vulnerabilities
+
+With vulnerabilities detected and a remediation action created, you can now
+apply the fix. In this section you review the recommended remediation, approve
+and schedule it, let Concert download and install the fixpack, and confirm the
+server is patched.
+
+## Step 1: Review the remediation action
+
+1. In Concert, go to **Resilience → Action Center**.
+2. Open the remediation action for the Liberty server. WebSphere vulnerability
+   actions have the type **Web server**.
+3. On the **Overview** tab, review the details:
+
+   | Field | Value for this lab |
+   |---|---|
+   | Type | Web server |
+   | Install directory | `/opt/IBM/wlp/` |
+   | Current version | 24.0.0.6 |
+   | Recommended version | 26.0.0.7 (Liberty fixpack) |
+   | Confidence | High |
+   | Reduce risk by | 100% |
+   | CVEs included | 11 |
+
+Concert recommends the fixpack that resolves the most CVEs. Here that is the
+**26.0.0.7 Liberty fixpack**, which addresses all 11 detected CVEs and reduces
+risk by 100%.
+
+![Remediation action Overview showing the upgrade from 24.0.0.6 to 26.0.0.7, High confidence, 100% risk reduction, and 11 CVEs included](./images/remediation-overview.png)
+
+## Step 2: Review the available fixes
+
+1. Open the **Available fixes** tab.
+2. You will see the list of available Liberty fixpacks. The recommended one
+   (**26.0.0.7-WS-LIBERTY-CORE-FP**) is marked **Recommended** and **Included**.
+   Older fixpacks are listed as **Excluded**.
+
+A **Fix Pack** upgrades WebSphere to a newer maintenance level and typically
+resolves multiple vulnerabilities at once. An **Interim Fix (iFix)** targets
+specific vulnerabilities without moving to the next fixpack level. For this lab,
+keep the recommended fixpack selected.
+
+![Available fixes tab showing the 26.0.0.7 Liberty fixpack marked as recommended and included](./images/available-fixes.png)
+
+## Step 3: Approve and schedule the remediation
+
+1. With the action open, click **Approve**.
+2. In the **Schedule and approve this upgrade** dialog, set the **Date** and
+   **Time** for the maintenance window.
+
+   :::caution
+   The upgrade must be scheduled to run at least **10 minutes in the future**,
+   and the action must be approved before that time. Pick a time a bit further
+   out (for example, 15 minutes ahead) to be safe. Do not use a time in the
+   past the scheduler skips windows that have already passed.
+   :::
+
+3. Click **Schedule and approve**.
+
+You will see a confirmation that the upgrade action was approved successfully,
+and the action status moves to **Scheduled**.
+
+![The approval confirmation dialog for the WebSphere upgrade](./images/schedule-approve.png)
+
+
+## Step 4: Concert applies the fixpack
+
+When the scheduled window arrives, Concert automatically carries out the
+remediation:
+
+1. Downloads the recommended fixpack from **IBM Fix Central** (using the
+   `sw_update_auth_key` credentials) to the fix download path
+   (`/tmp/tempFixes`).
+2. Backs up the current installation (backups for root installs go to
+   `/opt/backups`).
+3. Applies the fixpack using IBM Installation Manager and Ansible on the target
+   server.
+4. Restarts the WebSphere Liberty server to complete the installation.
+
+The `Monitor_Remediation_Action_Status` job (running every 5 minutes) picks up
+the scheduled action and drives this process. The remediation runs on the
+server side, so it continues even if you close the browser.
+
+:::caution
+Because the fixpack is downloaded and installed **on the target server**, the
+Liberty server needs `ansible-playbook` installed (see the preparation
+section). If the install step fails immediately with a return code of `2` and no
+log output, Ansible is almost certainly missing on the target. Install it with
+`dnf install -y ansible-core` on the Liberty server, then re-run the
+remediation.
+:::
+
+## Step 5: Monitor the remediation
+
+You can watch progress in two places.
+
+### In the Concert UI
+
+1. Go to **Resilience → Action Center**.
+2. Open the action and watch the status move through
+   **Scheduled → In progress → Completed**.
+
+Concert records the outcome, the execution details, and a remediation log you
+can open for verification or troubleshooting.
+
+### On the Liberty server
+
+SSH into the Liberty target and watch the version change as the fixpack applies:
+
+```bash
+watch -n 10 '/opt/IBM/wlp/bin/server version'
+```
+
+While the fix installs, the version stays at 24.0.0.6, then flips to the new
+level once the fixpack is applied and the server restarts.
+
+## Step 6: Verify the server is patched
+
+Confirm the remediation actually landed by checking the server directly. SSH
+into the Liberty target and run:
+
+```bash
+/opt/IBM/wlp/bin/server version
+```
+
+You should now see:
+
+```
+WebSphere Application Server 26.0.0.7 (1.0.115.cl260720260702-0043) on OpenJDK 64-Bit Server VM, version 17.0.20+8-LTS (en_US)
+```
+
+The version has moved from **24.0.0.6** to **26.0.0.7**. The fixpack is applied
+and all 11 CVEs are remediated.
+
+![Terminal showing the WebSphere Liberty server upgraded to version 26.0.0.7 after the fixpack was applied](./images/liberty-version-after.png)
+
+:::tip
+The server version is the definitive proof that the patch succeeded. The
+version number only changes if the fixpack actually installed, so a reading of
+`26.0.0.7` confirms the remediation worked regardless of what any intermediate
+status showed.
+:::
+
+You can also confirm the download and install artifacts on the target:
+
+```bash
+# The downloaded fixpack (about 733 MB) plus its checksum and signature
+ls -la /tmp/tempFixes/WebSphere_Application_Server_Liberty_Core/
+```
+
+## Step 7: Reassess
+
+After the patch, let Concert reassess the now-patched server so its records
+catch up.
+
+1. Run **Websphere_Assessment_Workflow** (or let the scheduled job run).
+2. Concert reassesses the server against the advisory data.
+
+Because the server is now on 26.0.0.7, the previously detected CVEs no longer
+apply, and Concert updates the vulnerability findings accordingly. Reassessment
+runs on an interval, so the Action Center and Vulnerability views may take an
+assessment cycle to fully reflect the patched state.
+
+:::note
+Concert generates remediation actions from the most recent assessment snapshot.
+Right after patching you may briefly see a new action created from older data;
+it clears once a fresh assessment runs against the patched server. The server
+version (`26.0.0.7`) remains the source of truth.
+:::
+
+You have now completed the full WebSphere vulnerability lifecycle: the server
+was discovered, assessed, found vulnerable, patched, and reassessed.
