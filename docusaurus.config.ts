@@ -5,8 +5,8 @@ import {themes} from "prism-react-renderer"
 const config: Config = {
   title: "TechXchange 2026 - Concert Protect Labs",
   tagline: "IBM IT & Network Automation Tiger Team",
-  url: "https://github.com/",
-  baseUrl: "/waiops-tech-jam/",
+  url: "https://jorgego11.github.io",
+  baseUrl: "/techxchange2026/",
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
   favicon: "img/favicon.svg",
@@ -16,8 +16,8 @@ const config: Config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: "ibm", // Usually your GitHub org/user name.
-  projectName: "waiops-tech-jam", // Usually your repo name.
+  organizationName: "jorgego11", // Usually your GitHub org/user name.
+  projectName: "techxchange2026", // Usually your repo name.
   deploymentBranch: "gh-pages",
   // Required for search to function correctly
   trailingSlash: true,
