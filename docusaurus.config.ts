@@ -148,7 +148,7 @@ const config: Config = {
 
             {
               label: "GitHub",
-              href: "https://github.com/IBM/waiops-tech-jam",
+              href: "https://github.com/jorgego11/techxchange2026",
             },
           ],
         },

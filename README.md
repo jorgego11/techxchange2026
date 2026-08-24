@@ -1,4 +1,4 @@
-# IBM AIOps Tech Jam
+# TechXchange 2026 - Concert Protect Labs
 
 To run locally you need to run:
 
@@ -7,4 +7,4 @@ npm install
 npm run start
 ```
 
-Browse to http://localhost:3000/waiops-tech-jam/
+Browse to http://localhost:3000/techxchange2026/
