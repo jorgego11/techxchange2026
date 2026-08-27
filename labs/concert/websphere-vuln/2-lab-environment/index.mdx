@@ -19,16 +19,7 @@ This is where Concert runs and where you spend most of your time in the browser.
 |---|---|
 | Product | IBM Concert Protect v3.0.0 |
 | Operating system | Red Hat Enterprise Linux 9 |
-| Hostname | `concert-v3-auto71.fyre.ibm.com` |
-| Concert UI | `https://concert-v3-auto71.fyre.ibm.com:12443/concert` |
-| Login | `ibmconcert` / `Passw0rd` |
-| Concert port | `12443` |
-| SSH port | `22` |
 
-Concert runs a small Kubernetes cluster internally. A **default worker group**
-holds the workers that run the WebSphere workflows and make the SSH connections
-out to the target server. You do not need to manage the cluster directly, but
-it is useful to know that the workflows execute there.
 
 ### WebSphere Liberty target server
 
@@ -40,10 +31,9 @@ demonstration target.
 |---|---|
 | Product | WebSphere Liberty 24.0.0.6 (liberty_core) |
 | Operating system | Red Hat Enterprise Linux 9 |
-| Hostname | `os-patch-rhel1.fyre.ibm.com` |
 | Server name | `defaultServer` |
 | Service | systemd unit `liberty@defaultServer` (active/running) |
-| HTTP endpoint | port `9080` |
+| Liberty HTTP endpoint | port `9080` |
 | Install path | `/opt/IBM/wlp` |
 | Server directory (contains `server.xml`) | `/opt/IBM/wlp/usr/servers/defaultServer` |
 
@@ -75,28 +65,14 @@ The connection flow for this lab looks like this:
 - During remediation, Concert reaches out to **IBM Fix Central** over HTTPS to
   download the recommended fixpack.
 
-![Architecture diagram showing the Bastion Host connecting to IBM Concert, Concert communicating with IBM Bob, Concert reaching the WebSphere Liberty target over SSH to discover, assess, and patch it, and Concert downloading the fixpack from IBM Fix Central over HTTPS](./images/architecture-diagram.png)
+![](./images/architecture-diagramTXC.png)
 
 ## Deployment type: non-FaaS
 
 Concert supports two execution models for WebSphere remediation workflows:
 Function-as-a-Service (FaaS) and non-FaaS. This lab uses the **non-FaaS** path.
-When you import the workflows, you will skip every workflow whose name ends in
-`_Faas`, and you will create the non-FaaS execution authentication
-(`concert_ansible_auth`) rather than the FaaS one.
 
-## Before you begin
 
-Make sure you have:
-
-- **SSH access** to both VMs as `root`. You connect with
-  `ssh root@concert-v3-auto71.fyre.ibm.com` and
-  `ssh root@os-patch-rhel1.fyre.ibm.com`.
-- Access to the **Concert UI** in a browser at the URL above.
-- **IBM Fix Central credentials** (your IBM ID and password). You will need
-  these later for the remediation step, when Concert downloads the fixpack. If
-  you do not have Fix Central access yet, you can still complete everything up
-  to the remediation step.
 
 In the next section you will verify your connectivity and prepare the
 environment.
