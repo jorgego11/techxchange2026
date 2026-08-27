@@ -24,7 +24,7 @@ The work breaks into these stages:
 
 ---
 
-## Step 1: Import the WebSphere workflows
+## 4.1 Import the WebSphere workflows
 
 The WebSphere vulnerability workflows provide the automation Concert uses to
 register Liberty servers, retrieve advisories, assess vulnerabilities, and remediate.
@@ -68,7 +68,7 @@ dependent remediation workflows called
 
 ---
 
-## Step 2: Create the authentications
+## 4.2 Create the authentications
 
 Authentications are how the workflows securely connect to Concert, to the
 WebSphere server, and to IBM Fix Central. You will create **four**
@@ -87,7 +87,7 @@ configurable field. This lets you update the authentication's values later
 without deleting and recreating it.
 :::
 
-### 2a. Configuration authentication `concert_config_auth`
+### 4.2.1 Configuration authentication `concert_config_auth`
 
 This stores the Concert connection details and the SSH key pair Concert uses.
 
@@ -124,7 +124,7 @@ Finally:
 * Similarly, replace `<Concert API Key>` with the `C_API_KEY aWJtY29...` key value from **credentials.sh** file (make sure not to include `Authorization:` in the value)
 
 
-### 2b. Software update authentication `sw_update_auth_key`
+### 4.2.2 Software update authentication `sw_update_auth_key`
 
 This lets the remediation workflows download fixpacks from IBM Fix Central. It
 is only used during remediation.
@@ -148,7 +148,7 @@ remediation download will fail later. Because you marked the fields
 authentication.
 :::
 
-### 2c. Execution authentication (non-FaaS) `concert_ansible_auth`
+### 4.2.3 Execution authentication (non-FaaS) `concert_ansible_auth`
 
 This lets Concert connect to the WebSphere server over SSH using Ansible during
 registration and remediation.
@@ -175,7 +175,7 @@ sudo cat ~/.ssh/id_rsa.pk8
 
 - **Inventory:** leave empty.
 
-### 2d. Workflow authentication `workflow_auth`
+### 4.2.4 Workflow authentication `workflow_auth`
 
 This lets the WebSphere workflows invoke other Concert workflows during
 registration and remediation.
@@ -211,7 +211,7 @@ for this lab.
 
 ---
 
-## Step 3: Configure the workflow inputs
+## 4.3 Configure the workflow inputs
 
 Most workflow inputs are already filled in correctly when you import the
 workflows. You only need to set a few.
@@ -274,7 +274,7 @@ import and do not usually need changing:
 
 ---
 
-## Step 4: Expose the workflows
+## 4.4 Exposing the workflows
 
 Concert invokes some workflows externally through API endpoints. Expose only the
 workflows in the table below.
@@ -301,7 +301,7 @@ not need endpoints.
 
 ---
 
-## Step 5: Schedule the jobs
+## 4.5 Schedule the jobs
 
 Scheduled jobs keep the advisory data fresh, reassess the server on an interval,
 and monitor remediation approvals.
@@ -333,7 +333,7 @@ keeps the advisory data ahead of the assessments.
 
 ---
 
-## Step 6: Prime the advisory data
+## 4.6 Prime the advisory data
 
 Before you register the first server, run the advisory workflow once by hand and
 let it finish. This populates Concert with the latest IBM WebSphere security
@@ -352,7 +352,7 @@ CVEs.
 
 ---
 
-## Step 7: Set up SSH trust between Concert and the Liberty server
+##  4.7 Set up SSH trust between Concert and the Liberty server
 
 Concert needs passwordless SSH access to the Liberty target. During
 registration you will retrieve Concert's public key and add it to the target.
@@ -376,7 +376,7 @@ password.
 
 ---
 
-## Step 8: Register the WebSphere server
+## 4.8 Register the WebSphere server
 
 Now register the Liberty server so Concert can inventory, assess, and remediate
 it.
@@ -414,7 +414,7 @@ the software inventory. You can watch progress under **Event logs**.
 
 ---
 
-## Step 9: Review the detected vulnerabilities
+## 4.9 Review the detected vulnerabilities
 
 After the advisory and assessment jobs have run, Concert evaluates the
 registered server and surfaces the CVEs that affect it.

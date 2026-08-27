@@ -3,7 +3,7 @@ title: 3. Lab Preparation
 sidebar_position: 3
 ---
 
-## 3.1: Overview
+## 3.1 Overview
 
 Before proceeding with the main lab activities, ensure that you have completed **all Lab Preparation steps** in this section.
 
@@ -17,7 +17,7 @@ using the browser, please disregard it. Select **Advanced** → **Accept the Ris
 
 ::: 
 
-## 3.2: Disabling the Terminal Window Timeout
+## 3.2 Disabling the Terminal Window Timeout
 
 This command comments out the default timeout settings a Terminal window and closes the window. We will do this to keep the
 Terminal window open during the Lab. 
@@ -32,7 +32,7 @@ sudo sed -i 's/^typeset -xr TMOUT=900/export TMOUT=0/' /etc/profile.d/tmout.sh;e
 ```
 
 
-## 3.2: Capturing the Lab Credentials
+## 3.3 Capturing the Lab Credentials
 
 In this section, you will collect all necessary credentials and configuration details required to complete the lab exercises. 
 All credentials will be consolidated into a single executable file, which simplifies the steps later in the lab.
@@ -109,7 +109,7 @@ Your `credentials.sh` file should look like this (key has been shortened for cla
 ![](images/creds.png)
 
 
-## 3.3: Verify SSH access to the Liberty servers
+## 3.4 Verify SSH access to the Liberty servers
 
 
 The commands below will source the credentials file and then confirm 
@@ -130,7 +130,7 @@ Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
 
 
 
-## 3.4: Confirm the Liberty server is running
+## 3.5 Confirm the Liberty server is running
 
 While we are still connected to the Liberty VM via ssh (from the previous step), lets 
 check the Liberty server version first:
@@ -155,7 +155,7 @@ systemctl --no-pager status liberty@defaultServer
 The response should mention **active (running)**.
 
 
-## 3.5: Confirm Ansible is installed on the Liberty VM
+## 3.6 Confirm Ansible is installed on the Liberty VM
 
 On IBM Concert 3.0.x, the remediation applies the Liberty fixpack by running
 an Ansible playbook on the Liberty VM itself. That means the Liberty server needs
@@ -176,7 +176,7 @@ exit
 ```
 
 
-## 3.6 Login into IBM Concert for the First Time
+## 3.7 Login into IBM Concert for the First Time
 
 From the **Concert VNC Desktop**, click on the top-left **Activities** button and then on the bottom panel, click on the **Firefox** icon.
 Copy/Paste the Concert URL from the **credentials.sh** file to the browser.
@@ -199,7 +199,7 @@ Make sure to choose **Skip** in the next page to bypass the setup wizard.
 :::
 
 
-## 3.3: Obtaining the IBM Concert API Key
+## 3.8 Obtaining the IBM Concert API Key
 
 
 * In the Concert UI, on the top right corner, click on the **API Key** icon
@@ -209,7 +209,7 @@ and save it into the credentials file after **Concert API Key:**
 * Click on the **X** to close the window
 
 
-## 3.7: You're ready to start the Lab
+## 3.9 You're ready to start the Lab
 
 With the Liberty server confirmed at
 v24.0.0.6, Ansible installed and access to Concert, you are ready to set up the Concert
