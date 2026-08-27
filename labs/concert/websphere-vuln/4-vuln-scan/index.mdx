@@ -27,14 +27,19 @@ The work breaks into these stages:
 ## Step 1: Import the WebSphere workflows
 
 The WebSphere vulnerability workflows provide the automation Concert uses to
-register servers, retrieve advisories, assess vulnerabilities, and remediate.
+register Liberty servers, retrieve advisories, assess vulnerabilities, and remediate.
 
-1. In the Concert UI, go to **Workflows**.
-2. Click **Create workflow → Select from library**.
-3. Search for `websphere` and import each of the WebSphere vulnerability
-   management workflows, **one at a time**.
+Download the zipped workflows file:
+1. From the **credentials.sh** file, copy the `Lab files:` URL
+2. Open a new browser tab in the Firefox browser and paste the URL
+3. Hover on the `flows_liberty.zip` file, check the checkbox on the right and click the Download icon
 
-Import these workflows:
+Import the workflows:
+1. In the Concert UI, select the **Workflows** top tab to get to the Concert Workflows page
+2. Click on the **Workflows** tile and then click on the **Import** button
+3. Select the file you just downloaded and click on **Open** to install the workflows
+
+Note that there are various workflows installed. The table below describes the purpose of each one:
 
 | Workflow library name | Imported name | Purpose |
 |---|---|---|
@@ -43,25 +48,20 @@ Import these workflows:
 | Onboard_WebSphere_Server | Inventory_workflow | Registers WebSphere servers and configures them for vulnerability management. |
 | Websphere_Advisory_Workflow | Websphere_Advisory_Workflow | Refreshes Concert's WebSphere security advisory data. |
 | Websphere_Assessment_Workflow | Websphere_Assessment_Workflow | Compares discovered inventory against advisories and creates remediation actions. |
-| Create Change Request For Remediation Action | Create_Change_Request_For_Remediation_Action | Creates change requests when external approval is used. |
 | Monitor Remediation Action Status | Monitor_Remediation_Action_Status | Monitors approval status and schedules approved remediation. |
 | Websphere_Remediation_Master | Websphere_Remediation_Master | Orchestrates remediation: downloads, prepares, and applies the fix. |
 | WebSphere_Notification_Publisher | Publish_notifications | Sends notifications for registration, assessment, and remediation events. |
 | Websphere Report | Websphere_Report | Generates inventory and remediation reports. |
 
-:::caution
-This lab uses the **non-FaaS** path. When you search the library you will also
-see `_Faas` variants of some workflows (for example
-`Onboard_WebSphere_Server_Faas`). **Skip every `_Faas` workflow.** Importing the
-wrong execution model will cause failures later.
-:::
+
+
 
 :::note
-When you import **Websphere_Remediation_Master**, Concert automatically imports
-the dependent remediation workflows it needs, including
+
+Note that complex workflows such as **Websphere_Remediation_Master**, have
+dependent remediation workflows called
 `Websphere_Remediation_Main`, `Websphere_Remediation_Fix_Download`, and
-`Websphere_Remediation_Fix_Install_Uninstall`. You do not import those
-separately.
+`Websphere_Remediation_Fix_Install_Uninstall`
 :::
 
 ![Workflows list under the User folder showing the imported WebSphere vulnerability management workflows](./images/workflows-imported.png)
@@ -76,11 +76,10 @@ authentications for this lab.
 
 To create each one:
 
-1. In the Concert UI, open the navigation menu.
-2. Go to **Workflows → Authentications**.
-3. Click **Create authentication**.
-4. Fill in the values shown below.
-5. Save.
+1. From the main Concert Workflows page, select the **Authentications** tile
+2. Click **Create authentication**
+3. Fill in the values shown below
+4. Save
 
 :::tip
 For every authentication, select the **Overridable** checkbox next to each
@@ -94,29 +93,36 @@ This stores the Concert connection details and the SSH key pair Concert uses.
 
 - **Name:** `concert_config_auth`
 - **Service:** `Config Data`
-- **Data:** provide the following JSON, using your instance's values:
+- **Data:** *see below*
 
-```json
-{
-  "host": "concert-v3-auto71.fyre.ibm.com",
-  "concert_port": "12443",
-  "ssh_port": "22",
-  "instanceId": "0000-0000-0000-0000",
-  "Authorization": "<Concert_API_key>",
-  "private_key": "<base64_encoded_private_key>",
-  "public_key": "<public_key>"
-}
-```
-
-To generate the key values, run these commands **on the Concert host**:
+To generate a JSON value for the Data field, open a **Terminal** window on the 
+**Concert VNC Desktop** and run all these commands together:
 
 ```bash
-# Base64-encoded private key for the "private_key" field
-base64 -w 0 ~/.ssh/id_rsa
+set -euo pipefail
+PRIVATE_KEY=$(base64 -w 0 ~/.ssh/id_rsa)
+PUBLIC_KEY=$(ssh-keygen -y -f ~/.ssh/id_rsa)
 
-# Public key for the "public_key" field
-cat ~/.ssh/id_rsa.pub
+cat <<EOF
+
+
+{
+  "host": "<concert_public_ip>",
+  "concert_port": "12443",
+  "ssh_port": "2223",
+  "instanceId": "0000-0000-0000-0000",
+  "Authorization": "<Concert API Key>",
+  "private_key": "${PRIVATE_KEY}",
+  "public_key": "${PUBLIC_KEY}"
+}
+EOF
 ```
+Copy the JSON output and paste it into the Data field.
+
+Finally:
+* Replace the `<concert_public_ip>` with the value from **credentials.sh** file
+* Similarly, replace `<Concert API Key>` with the `C_API_KEY aWJtY29...` key value from **credentials.sh** file (make sure not to include `Authorization:` in the value)
+
 
 ### 2b. Software update authentication `sw_update_auth_key`
 
@@ -153,16 +159,20 @@ registration and remediation.
   the Concert host, convert it:
 
 ```bash
-ssh-keygen -p -m PEM -f ~/.ssh/id_rsa -N "" -P ""
+sudo ssh-keygen -p -m PEM -f ~/.ssh/id_rsa -N "" -P ""
 
-openssl pkcs8 -topk8 -inform PEM -outform PEM \
+sudo openssl pkcs8 -topk8 -inform PEM -outform PEM \
   -in ~/.ssh/id_rsa \
   -out ~/.ssh/id_rsa.pk8 \
   -nocrypt
+
+sudo cat ~/.ssh/id_rsa.pk8
 ```
 
   Paste the contents of the generated `~/.ssh/id_rsa.pk8` into the **Private
-  key** field.
+  key** field. Include both BEGIN and END lines. 
+  DO NOT add a new line after the final `-----END PRIVATE KEY-----`
+
 - **Inventory:** leave empty.
 
 ### 2d. Workflow authentication `workflow_auth`
@@ -232,7 +242,7 @@ actions.
    | `workflow_auth` | `ibmconcert/workflow_auth` |
    | `workflow_user` | `ibmconcert` |
 
-3. Leave `sm_auth` empty (this lab does not use external approval).
+3. Leave `sm_auth` empty (this lab does not use external change request approval flow).
 4. Save.
 
 :::caution

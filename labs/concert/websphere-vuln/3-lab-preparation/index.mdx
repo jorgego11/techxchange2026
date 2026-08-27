@@ -3,125 +3,212 @@ title: 3. Lab Preparation
 sidebar_position: 3
 ---
 
-# Lab Preparation
+## 3.1: Overview
 
-Before setting up Concert, take a few minutes to confirm you can reach both
-virtual machines and the Concert UI. Getting connectivity confirmed up front
-saves time later, because the WebSphere workflows depend on Concert being able
-to reach the Liberty server over SSH.
+Before proceeding with the main lab activities, ensure that you have completed **all Lab Preparation steps** in this section.
 
 
-## Verify access to the Concert UI
+:::warning
+You may receive prompts for software updates during the lab.  
+Please **ignore these prompts** and **do not install any updates** to avoid disrupting the lab environment.
 
-Open the Concert UI in your browser:
+If you encounter a security warning such as **“Warning: Potential Security Risk Ahead”** when 
+using the browser, please disregard it. Select **Advanced** → **Accept the Risk and Continue**.
 
+::: 
+
+## 3.2: Disabling the Terminal Window Timeout
+
+This command comments out the default timeout settings a Terminal window and closes the window. We will do this to keep the
+Terminal window open during the Lab. 
+From the **Concert VNC Desktop**, click on the top-left **Activities** button and then on the bottom panel, click **Terminal**.
+
+![](images/terminal.png)
+
+Run the command below on the Terminal window:
+
+```bash
+sudo sed -i 's/^typeset -xr TMOUT=900/export TMOUT=0/' /etc/profile.d/tmout.sh;exit
 ```
-https://concert-v3-auto71.fyre.ibm.com:12443/concert
+
+
+## 3.2: Capturing the Lab Credentials
+
+In this section, you will collect all necessary credentials and configuration details required to complete the lab exercises. 
+All credentials will be consolidated into a single executable file, which simplifies the steps later in the lab.
+
+
+### Prepare the Credentials File
+
+1. Same as before, from the **Concert VNC Desktop**, click on the top-left **Activities** button and then on the bottom panel, click **Terminal**
+
+2. From the Terminal window, run the following commands to open the text editor:
+
+```bash
+cd /home/itzuser
+gedit credentials.sh &
 ```
 
-Log in with:
+3. Paste the following template and keep this credentials window open for easy access during the lab.
 
-- **Username:** `ibmconcert`
-- **Password:** `Passw0rd`
 
-You should land on the Concert home page with the **Protect**, **Resilience**,
-**Data Apps**, and **Workflows** tabs across the top.
+```bash
+# Lab guide:        https://jorgego11.github.io/techxchange2026/labs/concert/websphere-vuln/introduction/
+# Lab files:        https://ibm.box.com/v/lab-websphere
+#
+# Concert URL:      https://localhost:12443
+# concert_username: ibmconcert
+# concert_password: Passw0rd
 
-![IBM Concert home page after logging in, showing the Protect, Resilience, Data Apps, and Workflows tabs](./images/concert-home.png)
+# Concert API Key: 
 
-:::note
-The browser may warn that the site is "Not Secure" because the lab instance
-uses a self-signed certificate. This is expected for the lab environment.
-Proceed to the site.
+export ssh_port=2223
+export vm_user=itzuser
+export concert_public_ip=<paste-key-here>
+export liberty_public_ip=<paste-key-here>
+
+# liberty VM ssh private_key. Paste key after cat command.Include -----BEGIN RSA PRIVATE KEY----- and -----END RSA PRIVATE KEY-----
+cat << 'EOF' > ssh_liberty_key.pem
+Replace JUST this line with key. Leave EOF below. Include BEGIN and END lines
+EOF
+chmod 600 ssh_liberty_key.pem
+
+``` 
+
+From the Lab Environments page:
+1. Get the **public IP** for the **Concert VM** and paste it after the `=` sign
+2. Get the **public IP** for the **Liberty VM** and and paste it after the `=` sign
+
+From the **Liberty VNC Desktop**, click on the top-left **Activities** button and then on the bottom panel, click **Terminal**
+and run the command below to show the **ssh** private key:
+
+```bash
+cat ~/.ssh/id_rsa
+```
+
+Copy the entire key output (including BEGIN and END lines) and paste it to the **credentials.sh** file replacing the line 
+between the `cat` and `EOF` command.
+```text
+   -----BEGIN OPENSSH PRIVATE KEY-----
+   nqTB58Dk+o4rNZAq5IarTtmF7FDouq+RIgDGZySnCqokde1UeOHbxj/zDwO2C5SW
+   ...
+   gZuW7CibG7JRY5uT35Oy9yY2N5Wl8K81HH+AKyaqwE3mN5mRfmsyUrQra2hAbOHN
+   -----End OPENSSH PRIVATE KEY-----
+```
+
+:::important
+Save the the **credentials.sh** file and keep the window open. 
 :::
 
-## Step 3: Verify SSH access to both servers
 
-Open a terminal and confirm you can SSH into both VMs as `root`.
 
-Connect to the Concert server:
+Your `credentials.sh` file should look like this (key has been shortened for clarity)
+
+![](images/creds.png)
+
+
+## 3.3: Verify SSH access to the Liberty servers
+
+
+The commands below will source the credentials file and then confirm 
+you can ssh to the Liberty server target as user `itzuser`. Run these
+commands on the Terminal window:
 
 ```bash
-ssh root@concert-v3-auto71.fyre.ibm.com
+cd /home/itzuser
+source credentials.sh
+ssh -i ./ssh_liberty_key.pem -p $ssh_port itzuser@$liberty_public_ip
 ```
 
-Then confirm you can connect to the WebSphere Liberty target:
-
-```bash
-ssh root@os-patch-rhel1.fyre.ibm.com
+Respond `yes` to the question below:
+```
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
 ```
 
-Both should log you in without error.
 
-## Step 4: Confirm the WebSphere Liberty server is running
 
-While connected to the Liberty target (`os-patch-rhel1`), confirm the server is
-installed and running. Check the version first:
+
+## 3.4: Confirm the Liberty server is running
+
+While we are still connected to the Liberty VM via ssh (from the previous step), lets 
+check the Liberty server version first:
 
 ```bash
 /opt/IBM/wlp/bin/server version
 ```
 
-You should see output similar to:
+You should see an output similar to:
 
 ```
 WebSphere Application Server 24.0.0.6 (1.0.90.cl240620240603-2001) on OpenJDK 64-Bit Server VM, version 17.0.20+8-LTS (en_US)
 ```
 
 Note the version, **24.0.0.6**. This is the version Concert will find as
-vulnerable and later upgrade. Confirm the server process is active:
+vulnerable and later upgrade. Now confirm the server process is running:
 
 ```bash
-systemctl status liberty@defaultServer
+systemctl --no-pager status liberty@defaultServer
 ```
 
-The unit should be **active (running)**.
+The response should mention **active (running)**.
 
 
-## Step 5: Confirm Ansible is installed on the target
+## 3.5: Confirm Ansible is installed on the Liberty VM
 
-On IBM Concert 3.0.x, the non-FaaS remediation applies the fixpack by running
-**Ansible on the target server itself**. That means the Liberty server needs
+On IBM Concert 3.0.x, the remediation applies the Liberty fixpack by running
+an Ansible playbook on the Liberty VM itself. That means the Liberty server needs
 `ansible-playbook` available, or the patch step will fail later when it tries
 to install the fix.
 
-Check whether Ansible is present on the Liberty target:
+Confirm Ansible is present on the Liberty VM. You should see the path 
+where ansible-playbook is installed.
 
 ```bash
 which ansible-playbook
 ```
 
-If this returns a path such as `/usr/bin/ansible-playbook`, you are set.
-
-If it returns nothing (the command is not found), install it now:
+Finally, exit the ssh session to the Liberty VM:
 
 ```bash
-dnf install -y ansible-core
+exit
 ```
 
-Then confirm it works:
 
-```bash
-ansible-playbook --version
-```
+## 3.6 Login into IBM Concert for the First Time
 
-:::tip
-It is worth confirming Ansible **before** you start the remediation step. The
-fixpack download, authentication, and scheduling can all succeed, and the patch
-will still fail at the very end if `ansible-playbook` is not installed on the
-target. Installing it up front avoids that.
+From the **Concert VNC Desktop**, click on the top-left **Activities** button and then on the bottom panel, click on the **Firefox** icon.
+Copy/Paste the Concert URL from the **credentials.sh** file to the browser.
+
+Login to the Concert UI using the credentials from your credentials file:
+
+- **concert_username**
+- **concert_password**
+
+![](images/login-page.png)
+
+On the Concert welcome page, select the **Resilience** option on the right and select **Skip** in the next page:
+
+![](images/welcome.png)
+
+:::danger
+Make sure to choose **Skip** in the next page to bypass the setup wizard.
+
+![](images/skip.png)
 :::
 
-## Step 6: Clean up data from previous runs (optional)
 
-If someone has run this lab on the same Concert instance before, you may see an
-existing WebSphere server in the software inventory or leftover remediation
-actions. If you want a clean starting point, remove the previously registered
-server from **Software inventory** before you begin. If the instance is fresh,
-skip this step.
+## 3.3: Obtaining the IBM Concert API Key
 
-## You're ready
 
-With the VPN connected, both servers reachable, the Liberty server confirmed at
-24.0.0.6, and Ansible present on the target, you are ready to set up the Concert
-workflows. That is the focus of the next section.
+* In the Concert UI, on the top right corner, click on the **API Key** icon
+* Click **Generate API key**
+* After the API key is generated, copy the **Request header** value 
+and save it into the credentials file after **Concert API Key:**
+* Click on the **X** to close the window
+
+
+## 3.7: You're ready to start the Lab
+
+With the Liberty server confirmed at
+v24.0.0.6, Ansible installed and access to Concert, you are ready to set up the Concert
+workflows. That is the focus of the next Lab section.
