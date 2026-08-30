@@ -61,19 +61,28 @@ gedit credentials.sh &
 # concert_password: Passw0rd
 # Concert API Key: 
 
-# IBM Fix Central id: 
-# IBM Fix Central password: 
+# Liberty Server directory: /opt/IBM/wlp/usr/servers/defaultServer
+
+# IBM Fix Central URL:      https://www.ibm.com/support/fixcentral
+# IBM Fix Central id:       jorgegotest@gmail.com
+# IBM Fix Central password: <example ztWgg2LfryAHgEdjXzD9>
 
 export ssh_port=2223
 export vm_user=itzuser
-export concert_public_ip=<paste-key-here>
-export liberty_public_ip=<paste-key-here>
+export concert_fqdn=<paste-key-here>
+export liberty_fqdn=<paste-key-here>
+
 
 # liberty VM ssh private_key. Paste key after cat command.Include -----BEGIN RSA PRIVATE KEY----- and -----END RSA PRIVATE KEY-----
 cat << 'EOF' > ssh_liberty_key.pem
 Replace JUST this line with key. Leave EOF below. Include BEGIN and END lines
 EOF
 chmod 600 ssh_liberty_key.pem
+
+# This regenerates the Concert VM ssh public key if it doesn't exist
+[ -f ~/.ssh/id_rsa.pub ] || ssh-keygen -y -f ~/.ssh/id_rsa > ~/.ssh/id_rsa.pub
+chmod 644 ~/.ssh/id_rsa.pub
+
 
 ``` 
 

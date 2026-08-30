@@ -81,7 +81,7 @@ To create each one:
 3. Fill in the values shown below
 4. Save
 
-:::tip
+:::warning
 For every authentication, select the **Overridable** checkbox next to each
 configurable field. This lets you update the authentication's values later
 without deleting and recreating it.
@@ -101,13 +101,13 @@ To generate a JSON value for the Data field, open a **Terminal** window on the
 ```bash
 set -euo pipefail
 PRIVATE_KEY=$(base64 -w 0 ~/.ssh/id_rsa)
-PUBLIC_KEY=$(ssh-keygen -y -f ~/.ssh/id_rsa)
+PUBLIC_KEY=$(cat ~/.ssh/id_rsa.pub)
 
 cat <<EOF
 
 
 {
-  "host": "<concert_public_ip>",
+  "host": "<concert VM fqdn>",
   "concert_port": "12443",
   "ssh_port": "2223",
   "instanceId": "0000-0000-0000-0000",
@@ -120,7 +120,8 @@ EOF
 Copy the JSON output and paste it into the Data field.
 
 Finally:
-* Replace the `<concert_public_ip>` with the value from **credentials.sh** file
+* Replace the `<concert VM fqdn>` with the concert VM fully qualified domain 
+name value from **credentials.sh** file
 * Similarly, replace `<Concert API Key>` with the `C_API_KEY aWJtY29...` key value from **credentials.sh** file (make sure not to include `Authorization:` in the value)
 
 
@@ -135,8 +136,8 @@ is only used during remediation.
 
 ```json
 {
-  "username": "<fixcentral_username>",
-  "password": "<fixcentral_password>"
+  "username": "jorgegotest@gmail.com",
+  "password": "<example  ztWgg2LfryAHgEdjXzD9>"
 }
 ```
 
@@ -173,7 +174,8 @@ sudo cat ~/.ssh/id_rsa.pk8
   key** field. Include both BEGIN and END lines. 
   DO NOT add a new line after the final `-----END PRIVATE KEY-----`
 
-- **Inventory:** leave empty.
+- **Inventory:** leave empty but make sure to check the **Overridable** checkbox!
+
 
 ### 4.2.4 Workflow authentication `workflow_auth`
 
@@ -270,7 +272,7 @@ import and do not usually need changing:
 | Websphere_Remediation_Main | `wsaBackupDir` | `/opt/backups` |
 | Websphere_Report | `report_type` | `software_inventory` |
 
-![Monitor_Remediation_Action_Status Start block with wf_to_schedule, workflow_auth, and workflow_user filled in](./images/monitor-workflow-inputs.png)
+![](./images/monitor-workflow-inputs.png)
 
 ---
 
@@ -340,9 +342,12 @@ let it finish. This populates Concert with the latest IBM WebSphere security
 advisories so the assessment has data to compare against.
 
 1. Go to **Workflows → User → Websphere_Advisory_Workflow**.
-2. Click **Run**.
-3. Wait for it to complete. The initial run typically takes about **20
-   minutes** to retrieve the advisory data.
+2. Click **Run** and wait until it finish in a few seconds.
+
+This will trigger an asynchronous `Websphere advisory job` that will connect to
+IBM Fix Central and pulls WebSphere advisory information. To see the status of this job, 
+click on the top **Resilience** tab and select **Administration** -> **Event Log** from the left menu.
+The initial run typically takes about 20 minutes to retrieve the advisory data.
 
 :::caution
 Register WebSphere servers only **after** this initial advisory run completes.
@@ -352,49 +357,40 @@ CVEs.
 
 ---
 
-##  4.7 Set up SSH trust between Concert and the Liberty server
+## 4.7 Register the WebSphere server
 
 Concert needs passwordless SSH access to the Liberty target. During
 registration you will retrieve Concert's public key and add it to the target.
 
-1. In Concert, go to **Software inventory**.
-2. Click **Add software**.
-3. Click **Get public key**. Concert displays its public SSH key.
-4. Copy that public key.
-5. SSH into the Liberty target and add the key to root's authorized keys:
+1. In the Concert UI, select the **Resilience** tab on top and select **Inventory** -> **Software inventory** on the left menu
+2. Click **Add software**
+3. Click **Get public key**. Concert displays its public SSH key
+4. Instead of manually adding Concert's public key into the liberty VM ~/.ssh/authorized_keys
+from a Terminal window, run the following command by replacing `liberty_public_ip` with the actual 
+value from credentials.sh:
 
 ```bash
-ssh root@os-patch-rhel1.fyre.ibm.com
-# paste Concert's public key onto a new line in:
-#   /root/.ssh/authorized_keys
+ssh-copy-id -f -i ~/.ssh/id_rsa.pub -p 2223 -o IdentityFile=$HOME/ssh_liberty_key.pem itzuser@<liberty_public_ip>
 ```
 
 After adding the key, Concert can reach the Liberty server over SSH without a
 password.
 
+
 ![The Get public key dialog in the Add software wizard showing Concert's SSH public key](./images/get-public-key.png)
 
----
 
-## 4.8 Register the WebSphere server
-
-Now register the Liberty server so Concert can inventory, assess, and remediate
-it.
-
-1. In Concert, go to **Software inventory → Add software**.
-2. Click **Get public key** (if you have not already added it to the target,
-   do so now see Step 7), then click **Next**.
-3. Under **Select a software offering**, choose **IBM WebSphere**, then
+5. Click **Next**.
+6. Under **Select a software offering**, choose **IBM WebSphere**, then
    **Next**.
 4. Provide the connection details:
-   - **Server:** `os-patch-rhel1.fyre.ibm.com`
-   - **User:** the SSH user (`root`)
+   - **Server:** copy the **liberty_fqdn** value from credentials.sh
+   - **User:** `itzuser`
 5. Click **Validate connection**. Concert confirms it can reach the server over
    SSH.
 6. Provide the WebSphere details:
    - **Type:** `Liberty`
-   - **Path:** `/opt/IBM/wlp/usr/servers/defaultServer` (the directory that
-     contains `server.xml`)
+   - **Path:** `/opt/IBM/wlp/usr/servers/defaultServer` 
 7. Click **Register**.
 
 :::caution
@@ -403,8 +399,8 @@ required configuration changes. Expect a brief interruption while it restarts.
 :::
 
 :::note
-Register by **hostname** (`os-patch-rhel1.fyre.ibm.com`), not by IP address.
-Registration by bare IP is not supported.
+Register by **hostname**, not by IP address.
+Registration by IP address is not supported in this release
 :::
 
 Concert now discovers the installed WebSphere software and adds the server to
@@ -419,7 +415,8 @@ the software inventory. You can watch progress under **Event logs**.
 After the advisory and assessment jobs have run, Concert evaluates the
 registered server and surfaces the CVEs that affect it.
 
-1. In Concert, go to **Resilience → Vulnerability**.
+1. In Concert, click the **Resilience** tab on top and select **Dimensions → Vulnerability**
+on the left menu
 2. Review the detected vulnerabilities for the registered server.
 3. Select a vulnerability to see its details: severity, CVSS score,
    description, affected versions, and the recommended remediation.
