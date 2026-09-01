@@ -37,7 +37,7 @@ Download the zipped workflows file:
 Import the workflows:
 1. In the Concert UI, select the **Workflows** top tab to get to the Concert Workflows page
 2. Click on the **Workflows** tile and then click on the **Import** button
-3. Select the file you just downloaded and click on **Open** to install the workflows
+3. Select **Downloads** on the right side, pick the file you just downloaded and click on **Open** to install the workflows
 
 Note that there are various workflows installed. The table below describes the purpose of each one:
 
@@ -64,7 +64,7 @@ dependent remediation workflows called
 `Websphere_Remediation_Fix_Install_Uninstall`
 :::
 
-![Workflows list under the User folder showing the imported WebSphere vulnerability management workflows](./images/workflows-imported.png)
+![](./images/workflows-imported.png)
 
 ---
 
@@ -78,7 +78,8 @@ To create each one:
 
 1. From the main Concert Workflows page, select the **Authentications** tile
 2. Click **Create authentication**
-3. Fill in the values shown below
+3. Fill in the values shown below. Make sure you don't change any provided values like authentication Name.
+The Names listed are being referenced from the workflows.
 4. Save
 
 :::warning
@@ -95,7 +96,7 @@ This stores the Concert connection details and the SSH key pair Concert uses.
 - **Service:** `Config Data`
 - **Data:** *see below*
 
-To generate a JSON value for the Data field, open a **Terminal** window on the 
+To generate a JSON value for the Data field, open a NEW **Terminal** window on the 
 **Concert VNC Desktop** and run all these commands together:
 
 ```bash
@@ -120,8 +121,7 @@ EOF
 Copy the JSON output and paste it into the Data field.
 
 Finally:
-* Replace the `<concert VM fqdn>` with the concert VM fully qualified domain 
-name value from **credentials.sh** file
+* Replace the `<concert VM fqdn>` with the concert VM hostname value from **credentials.sh** file
 * Similarly, replace `<Concert API Key>` with the `C_API_KEY aWJtY29...` key value from **credentials.sh** file (make sure not to include `Authorization:` in the value)
 
 
@@ -157,7 +157,7 @@ registration and remediation.
 - **Name:** `concert_ansible_auth`
 - **Service:** `Ansible`
 - **Private key:** Concert needs the private key in **PKCS#8 PEM** format. On
-  the Concert host, convert it:
+  the Concert VM, run the command below on a Terminal window:
 
 ```bash
 sudo ssh-keygen -p -m PEM -f ~/.ssh/id_rsa -N "" -P ""
@@ -170,11 +170,11 @@ sudo openssl pkcs8 -topk8 -inform PEM -outform PEM \
 sudo cat ~/.ssh/id_rsa.pk8
 ```
 
-  Paste the contents of the generated `~/.ssh/id_rsa.pk8` into the **Private
-  key** field. Include both BEGIN and END lines. 
-  DO NOT add a new line after the final `-----END PRIVATE KEY-----`
+  Paste the contents of the generated key into the **Private
+  key** field. Include both BEGIN and END lines.
 
-- **Inventory:** leave empty but make sure to check the **Overridable** checkbox!
+- **Inventory:** leave empty
+- **Overridable** make sure you check both checkboxes!
 
 
 ### 4.2.4 Workflow authentication `workflow_auth`
@@ -276,7 +276,24 @@ import and do not usually need changing:
 
 ---
 
-## 4.4 Exposing the workflows
+## 4.4 Prime the advisory data
+
+Before you register the first server, run the advisory workflow once by hand and
+let it finish. This populates Concert with the latest IBM WebSphere security
+advisories so the assessment has data to compare against.
+
+1. Go to **Workflows → User → Websphere_Advisory_Workflow**.
+2. Click **Run** and wait until it finish in a few seconds.
+
+This will trigger an asynchronous `Websphere advisory job` that will connect to
+IBM Fix Central and pulls WebSphere advisory information. To see the status of this job, 
+click on the top **Resilience** tab and select **Administration** -> **Event Log** from the left menu.
+The initial run typically takes about 20 minutes to retrieve the advisory data.
+
+
+---
+
+## 4.5 Exposing the workflows
 
 Concert invokes some workflows externally through API endpoints. Expose only the
 workflows in the table below.
@@ -303,27 +320,28 @@ not need endpoints.
 
 ---
 
-## 4.5 Schedule the jobs
+## 4.6 Schedule the jobs
 
 Scheduled jobs keep the advisory data fresh, reassess the server on an interval,
 and monitor remediation approvals.
 
 For each job:
 
-1. Go to **Workflows → Jobs**.
-2. Click **Create job**.
-3. Select the workflow.
-4. Set the worker group to **default**.
-5. Toggle **Enable job** on.
-6. Set **Ends** to **Never**.
-7. Set the repeat interval from the table.
-8. Save.
+1. Go to **Workflows → Jobs**
+2. Click **Create job**
+3. Select the workflow
+4. Set the worker group to **default**
+5. Toggle **Enable job** on
+6. In the **Repeats** field, select **Advanced settings** 
+7. Set **Ends** to **Never**
+8. Set the repeat interval from the table
+9. Save
 
-| Workflow | Recommended interval |
-|---|---|
-| Websphere_Advisory_Workflow | Twice daily |
-| Websphere_Assessment_Workflow | Every 20 minutes |
-| Monitor_Remediation_Action_Status | Every 5 minutes |
+| Name & Workflow | Recommended interval | Cron job expression
+|---|---|---|
+| Websphere_Advisory_Workflow | Every 12 hours | 0 0 */12 ?
+| Websphere_Assessment_Workflow | Every 20 minutes | 0 */20 * ?
+| Monitor_Remediation_Action_Status | Every 5 minutes | 0 */5 * ?
 
 :::note
 The advisory job must run **before** the assessment job, because the assessment
@@ -331,67 +349,41 @@ uses the advisory data to evaluate the server. The schedule above naturally
 keeps the advisory data ahead of the assessments.
 :::
 
-![Workflows Jobs list showing the enabled scheduled jobs for advisory, assessment, and remediation monitoring](./images/scheduled-jobs.png)
+![](./images/scheduled-jobs.png)
 
----
-
-## 4.6 Prime the advisory data
-
-Before you register the first server, run the advisory workflow once by hand and
-let it finish. This populates Concert with the latest IBM WebSphere security
-advisories so the assessment has data to compare against.
-
-1. Go to **Workflows → User → Websphere_Advisory_Workflow**.
-2. Click **Run** and wait until it finish in a few seconds.
-
-This will trigger an asynchronous `Websphere advisory job` that will connect to
-IBM Fix Central and pulls WebSphere advisory information. To see the status of this job, 
-click on the top **Resilience** tab and select **Administration** -> **Event Log** from the left menu.
-The initial run typically takes about 20 minutes to retrieve the advisory data.
-
-:::caution
-Register WebSphere servers only **after** this initial advisory run completes.
-If you assess before the advisory data is loaded, Concert will not find any
-CVEs.
-:::
 
 ---
 
 ## 4.7 Register the WebSphere server
+
+:::caution
+Register WebSphere servers only **after** the initial **Websphere advisory job** run completes.
+If you register a server before the advisory data is loaded, Concert will not find any
+CVEs. To see the status of this job, 
+click on the top **Resilience** tab and select **Administration** -> **Event Log** from the left menu, 
+and look for **Websphere advisory job**.
+:::
 
 Concert needs passwordless SSH access to the Liberty target. During
 registration you will retrieve Concert's public key and add it to the target.
 
 1. In the Concert UI, select the **Resilience** tab on top and select **Inventory** -> **Software inventory** on the left menu
 2. Click **Add software**
-3. Click **Get public key**. Concert displays its public SSH key
-4. Instead of manually adding Concert's public key into the liberty VM ~/.ssh/authorized_keys
-from a Terminal window, run the following command by replacing `liberty_public_ip` with the actual 
-value from credentials.sh:
-
-```bash
-ssh-copy-id -f -i ~/.ssh/id_rsa.pub -p 2223 -o IdentityFile=$HOME/ssh_liberty_key.pem itzuser@<liberty_public_ip>
-```
-
-After adding the key, Concert can reach the Liberty server over SSH without a
-password.
-
+3. Click **Get public key**. Concert displays its public SSH key. We have already added Concert's public key into the Liberty VM ~/.ssh/authorized_keys
+during the Lab Preparation section
 
 ![The Get public key dialog in the Add software wizard showing Concert's SSH public key](./images/get-public-key.png)
 
-
-5. Click **Next**.
-6. Under **Select a software offering**, choose **IBM WebSphere**, then
-   **Next**.
-4. Provide the connection details:
+4. Click **Next**
+5. Under **Select a software offering**, choose **IBM WebSphere**, then **Next**
+6. Provide the connection details:
    - **Server:** copy the **liberty_fqdn** value from credentials.sh
    - **User:** `itzuser`
-5. Click **Validate connection**. Concert confirms it can reach the server over
-   SSH.
-6. Provide the WebSphere details:
+7. Click **Validate connection**. Concert confirms it can reach the server over SSH
+8. Provide the WebSphere details:
    - **Type:** `Liberty`
    - **Path:** `/opt/IBM/wlp/usr/servers/defaultServer` 
-7. Click **Register**.
+9. Click **Register**
 
 :::caution
 Registration **restarts** the WebSphere Liberty server so it can apply the
@@ -410,7 +402,7 @@ the software inventory. You can watch progress under **Event logs**.
 
 ---
 
-## 4.9 Review the detected vulnerabilities
+## 4.8 Review the detected vulnerabilities
 
 After the advisory and assessment jobs have run, Concert evaluates the
 registered server and surfaces the CVEs that affect it.
