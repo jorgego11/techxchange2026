@@ -17,10 +17,8 @@ from registration to a confirmed patch.
 - **Discovered** the software installed on the server.
 - **Assessed** it against IBM WebSphere security advisories and found **21
   CVEs**.
-- **Remediated** the findings by approving and applying the recommended
-  **26.0.0.8 Liberty fixpack**.
-- **Verified** the server upgraded from 24.0.0.6 to 26.0.0.8, remediating all
-  21 CVEs and reducing risk by 100%.
+- **Remediated** the findings by approving and applying a lower than recommended version **26.0.0.7 Liberty fixpack**.
+- **Verified** the server upgraded from 24.0.0.6 to 26.0.0.7, remediating 11 CVEs.
 
 ## The vulnerability lifecycle, recapped
 
@@ -30,10 +28,10 @@ from registration to a confirmed patch.
 | Discover | Inventoried the installed WebSphere software and versions. |
 | Retrieve advisories | Pulled the latest IBM WebSphere security advisories. |
 | Assess | Compared inventory against advisories, found 21 CVEs. |
-| Generate action | Created a remediation action recommending the 26.0.0.8 fixpack. |
-| Approve and schedule | You approved and scheduled the upgrade. |
+| Generate action | Created a remediation action |
+| Approve and schedule | You selected the fixpack to apply, approved and scheduled the upgrade. |
 | Remediate | Downloaded the fixpack from Fix Central and applied it via Ansible. |
-| Verify and reassess | Confirmed 26.0.0.8 and reassessed the patched server. |
+| Verify and reassess | Confirmed 26.0.0.7 and reassessed the patched server. |
 
 
 ## What you learned
@@ -43,6 +41,15 @@ how it discovers what software is running, assesses it against published
 advisories, recommends and applies officially supported fixes, and monitors the
 result. This same lifecycle applies across your registered WebSphere estate, and
 Concert repeats it continuously as new advisories are published.
+
+
+---
+
+
+
+# Congratulations! You have completed the Lab
+
+
 
 
 ---
@@ -120,12 +127,3 @@ After patching, the Action Center or Vulnerability view may lag:
   **Websphere_Assessment_Workflow** and wait. The server version on the target
   (`26.0.0.7`) is the definitive confirmation that the patch worked.
 
-## Cleanup (optional)
-
-When you are done with the lab environment:
-
-- Remove the registered WebSphere server from **Software inventory** if you want
-  to reset for another run.
-- Rotate any credentials that were used during setup as good hygiene. Do **not**
-  rotate the Concert API key while WebSphere servers are still registered, or you will
-  have to register them again.

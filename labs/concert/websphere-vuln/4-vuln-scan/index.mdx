@@ -37,7 +37,12 @@ Download the zipped workflows file:
 Import the workflows:
 1. In the Concert UI, select the **Workflows** top tab to get to the Concert Workflows page
 2. Click on the **Workflows** tile and then click on the **Import** button
-3. Select **Downloads** on the right side, pick the file you just downloaded and click on **Open** to install the workflows
+3. Select **Downloads** on the left side, pick the file you just downloaded and click on **Open** to install the workflows
+
+:::note
+You may want to enable the Firefox menu bar and zoom-out to work better with the UI
+::: 
+
 
 Note that there are various workflows installed. The table below describes the purpose of each one:
 
@@ -213,66 +218,29 @@ for this lab.
 
 ---
 
-## 4.3 Configure the workflow inputs
+## 4.3 Exposing the workflows
 
-Most workflow inputs are already filled in correctly when you import the
-workflows. You only need to set a few.
+Concert invokes some workflows externally through API endpoints. Expose the
+workflows listed in the table below so they can be run by Concert. 
 
-When an input asks for an authentication, use the format
-`<concert_username>/<authentication_name>` for this lab that means the
-`ibmconcert/` prefix, for example `ibmconcert/workflow_auth`.
+For each one:
 
-### Inventory_workflow
+1. Open the **Workflows** page.
+2. Find the workflow.
+3. Click **Actions (⋮) → Automate → Expose externally**.
+4. Set the **Exposure path** and **Asynchronous execution** as defined in the table.
+6. Click **Expose**.
 
-1. Open **Inventory_workflow** in the editor.
-2. In the **Start** block's user variables, set `environment_type` to `vm`.
-   (The default is `ocp`, which is for OpenShift deployments and is wrong for
-   VM-based servers like this lab.)
-3. Save.
-
-### Monitor_Remediation_Action_Status
-
-This workflow needs a few inputs set so it can schedule approved remediation
-actions.
-
-1. Open **Monitor_Remediation_Action_Status** in the editor.
-2. In the **Start** block, set these values:
-
-   | Input | Value |
-   |---|---|
-   | `wf_to_schedule` | `ibmconcert/User/Websphere_Remediation_Master/Websphere_Remediation_Main` |
-   | `workflow_auth` | `ibmconcert/workflow_auth` |
-   | `workflow_user` | `ibmconcert` |
-
-3. Leave `sm_auth` empty (this lab does not use external change request approval flow).
-4. Save.
-
-:::caution
-The `wf_to_schedule` path must point to the **Websphere_Remediation_Main**
-workflow inside the master, and it must include the **`User/`** folder segment:
-`ibmconcert/User/Websphere_Remediation_Master/Websphere_Remediation_Main`. If
-the path is missing the `User/` segment, scheduling fails with a
-`404 - Audited flow does not exist` error because Concert cannot find the
-workflow at the path you gave it. If you also see a
-`500 - Request method 'POST' is not supported` error, it means one of the
-required inputs above (`workflow_auth` or `workflow_user`) is still empty 
-fill them in and save.
-:::
-
-### Other configurable inputs
-
-The remaining WebSphere-specific inputs are already set to sensible defaults on
-import and do not usually need changing:
-
-| Workflow | Input | Default |
+| Workflow | Exposure path | Asynchronous execution |
 |---|---|---|
-| Websphere_Remediation_Main | `fix_download_path` | `/tmp/tempFixes` |
-| Websphere_Remediation_Main | `deleteFixes` | `true` |
-| Websphere_Remediation_Main | `backupNeeded` | `true` |
-| Websphere_Remediation_Main | `wsaBackupDir` | `/opt/backups` |
-| Websphere_Report | `report_type` | `software_inventory` |
+| Get_public_key | `/ssh/public-key` | leave uncheck |
+| Health_check | `/servers/test-connection` | leave uncheck |
+| Inventory_workflow | `/servers/register` | check |
+| Websphere_Assessment_Workflow | `/websphere_assessment` | leave uncheck |
+| Publish_notifications | `/publish_notifications` | check |
 
-![](./images/monitor-workflow-inputs.png)
+Expose only these. The other WebSphere workflows are invoked internally and do
+not need endpoints.
 
 ---
 
@@ -293,30 +261,62 @@ The initial run typically takes about 20 minutes to retrieve the advisory data.
 
 ---
 
-## 4.5 Exposing the workflows
+## 4.5 Reviewing the workflow inputs
 
-Concert invokes some workflows externally through API endpoints. Expose only the
-workflows in the table below.
+The workflow set you have imported are already filled in the authentication names you have 
+previously defined. DO NOT change any predefined authentications. 
 
-For each one:
+Note that the authentication format is 
+`<concert_username>/<authentication_name>`. For this lab,  that means the
+`ibmconcert/` prefix, for example `ibmconcert/workflow_auth`.
 
-1. Open the **Workflows** page.
-2. Find the workflow.
-3. Click **Actions (⋮) → Automate → Expose externally**.
-4. Set the API path and execution type from the table.
-5. For asynchronous workflows, enable the **Asynchronous execution** option.
-6. Click **Expose**.
+### Inventory_workflow
 
-| Workflow | API path | Type |
+1. Open **Inventory_workflow** in the editor.
+2. In the **Start** block's user variables, review the authentications. 
+3. Note `environment_type` is set to `vm`. Another valid option is `ocp`, which is for OpenShift deployments.
+
+### Monitor_Remediation_Action_Status
+
+This workflow needs a few inputs set so it can schedule approved remediation
+actions.
+
+1. Open **Monitor_Remediation_Action_Status** in the editor.
+2. Note the following authentications already set:
+
+   | Input | Value |
+   |---|---|
+   | `wf_to_schedule` | `ibmconcert/User/Websphere_Remediation_Master/Websphere_Remediation_Main` |
+   | `workflow_auth` | `ibmconcert/workflow_auth` |
+   | `workflow_user` | `ibmconcert` |
+
+
+:::note
+The `wf_to_schedule` path must point to the **Websphere_Remediation_Main**
+workflow inside the master, and it must include the **`User/`** folder segment:
+`ibmconcert/User/Websphere_Remediation_Master/Websphere_Remediation_Main`. If
+the path is missing the `User/` segment, scheduling fails with a
+`404 - Audited flow does not exist` error because Concert cannot find the
+workflow at the given path.
+:::
+
+### Other configurable inputs
+
+The remaining WebSphere-specific inputs are already set to sensible defaults on
+import and do not usually need changing:
+
+| Workflow | Input | Default |
 |---|---|---|
-| Get_public_key | `/ssh/public-key` | Synchronous |
-| Health_check | `/servers/test-connection` | Synchronous |
-| Inventory_workflow | `/servers/register` | Asynchronous |
-| Websphere_Assessment_Workflow | `/websphere_assessment` | Synchronous |
-| Publish_notifications | `/publish_notifications` | Asynchronous |
+| Websphere_Remediation_Main | `fix_download_path` | `/tmp/tempFixes` |
+| Websphere_Remediation_Main | `deleteFixes` | `false` |
+| Websphere_Remediation_Main | `backupNeeded` | `true` |
+| Websphere_Remediation_Main | `wsaBackupDir` | `/opt/backups` |
+| Websphere_Report | `report_type` | `software_inventory` |
 
-Expose only these. The other WebSphere workflows are invoked internally and do
-not need endpoints.
+![](./images/monitor-workflow-inputs.png)
+
+
+
 
 ---
 
@@ -334,8 +334,8 @@ For each job:
 5. Toggle **Enable job** on
 6. In the **Repeats** field, select **Advanced settings** 
 7. Set **Ends** to **Never**
-8. Set the repeat interval from the table
-9. Save
+8. Set the **Cron job expression** value from the table
+9. Click on **Create**
 
 | Name & Workflow | Recommended interval | Cron job expression
 |---|---|---|

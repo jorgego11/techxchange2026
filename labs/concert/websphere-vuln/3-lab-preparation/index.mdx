@@ -88,10 +88,9 @@ Save the the **credentials.sh** file and keep the window open.
 :::
 
 
-## 3.4 Enable Port Forwarding in Both VMs
+## 3.4 Enable Port Forwarding in the Concert VM
 
-Run the commands below on both, the Concert VM **Terminal** window and the
-Liberty VM **Terminal** window:
+Run the commands below on the Concert VM **Terminal** window:
 
 ```bash
 sudo tee /etc/ssh/sshd_config.d/00-0-forwarding.conf >/dev/null <<'EOF'
@@ -104,7 +103,7 @@ sudo sshd -T | grep -iE 'disableforwarding|allowtcpforwarding'
 
 ## 3.5 Copy SSH Public Keys Across the VMs
 
-In order to allow SSH connection between the Concert and Liberty we will
+In order to allow cross SSH connection between the Concert and Liberty VMs, we will
 copy the each other SSH public keys.
 
 Run the command below on the Concert VM Terminal window: 
@@ -164,7 +163,7 @@ sudo /opt/IBM/wlp/bin/server version
 You should see an output similar to:
 
 ```
-*Server defaultServer is already running* or if it was not running *Starting server defaultServer*
+*Server defaultServer is already running*   or if it was not running   *Starting server defaultServer*
 WebSphere Application Server 24.0.0.6 (1.0.90.cl240620240603-2001) on OpenJDK 64-Bit Server VM, version 17.0.20+8-LTS (en_US)
 ```
 
@@ -207,8 +206,10 @@ Make sure to choose **Skip** in the next page to bypass the setup wizard.
 * In the Concert UI, on the top right corner, click on the **API Key** icon
 * Click **Generate API key**
 * After the API key is generated, copy the **Request header** value 
-and save it into the credentials file after **Concert API Key:**
-* Click on the **X** to close the window
+and paste it into the credentials file after **Concert API Key:**
+* Remove `Authorization:` from the value you pasted. We only need the value starting with C_API_KEY ...
+* Make sure to **Save** the credentials file and keep the window open. 
+* Click on the **X** to close the **API key** window
 
 
 ## 3.10 You're ready to start the Lab
