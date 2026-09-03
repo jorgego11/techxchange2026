@@ -1,0 +1,52 @@
+---
+title: 1. Introduction
+description: Introductory material that includes concepts, major features and content overview.
+sidebar_position: 1
+---
+
+# Introduction
+
+Welcome to the **IBM Concert Application Vulnerability Management Lab**. Through a series of hands-on exercises you'll see how IBM Concert streamlines and automates application vulnerability management — turning a typically manual, ticket-driven process into an end-to-end, AI-orchestrated workflow that reduces both risk and time to remediation.
+
+## What is IBM Concert?
+
+No prior Concert experience is required. This lab is designed to be followed step by step, and everything you need is explained along the way.
+
+Application and infrastructure data usually lives scattered across disparate tools and environments, and on its own that data is just noise. **IBM Concert** brings it all together into a single, clear view of how your systems are performing and how resilient they really are. Rather than just reporting a score, Concert helps you act on it — surfacing the vulnerabilities that matter most and, where possible, driving automated remediation.
+
+For application vulnerability management specifically, Concert:
+
+- Connects to your applications and their dependencies
+- Discovers the vulnerabilities present across both source code and running container images
+- Prioritizes what to fix based on real risk in *your* environment
+- Orchestrates the remediation workflow, coordinating tools such as IBM Bob, Ansible, and ServiceNow
+
+## What You Will Do
+
+This lab walks you through the complete vulnerability management lifecycle:
+
+| Step | Section | What You Do |
+|------|---------|-------------|
+| 1 | Lab Environment | Review the infrastructure architecture and access your lab environment |
+| 2 | Lab Preparation | Set up credentials, create a GitHub token, fork the sample repository, and configure Concert integrations |
+| 3 | Auto-Discovery & Risk Prioritization | Connect a GitHub repository and OpenShift cluster, set business criticality, analyze blast radius, and open tracked remediation issues |
+| 4 | Lab Summary | Review what you accomplished and the core business value IBM Concert provides |
+
+Work through the sections in the numbered order shown in the left-hand navigation pane — later sections build on work completed in earlier ones.
+
+## Key Concepts
+
+Before you begin, it helps to know a few terms used throughout the lab:
+
+- **CVE** — Common Vulnerabilities and Exposures. A publicly disclosed security flaw assigned a unique identifier such as `CVE-2021-44228`.
+- **CVSS** — Common Vulnerability Scoring System. An industry-standard severity rating from 0 to 10 that measures how dangerous a flaw is *in general*.
+- **EPSS** — Exploit Prediction Scoring System. An AI model that predicts the probability a CVE will be exploited within the next 30 days.
+- **NVD** - National Vulnerability Database. U.S. government repository of standards-based vulnerability management data, maintained by the National Institute 
+of Standards and Technology (NIST).
+- **Blast radius** — Concert's dependency-impact graph showing which assets are affected by a specific vulnerability and by what path.
+- **Risk score** — Concert's own score (1–10) combining CVSS severity, EPSS exploitability, and the business context you provide to measure how much a 
+vulnerability matters *in your environment*.
+
+:::tip Need help?
+If you have questions during the lab, ask your instructors. If you are completing the lab virtually, use the Slack channel listed in the [**Support** section](https://techzone.ibm.com/collection/jam-in-a-box-for-aiops).
+:::
