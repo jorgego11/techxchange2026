@@ -34,6 +34,8 @@ Download the zipped workflows file:
 2. Open a new browser tab in the Firefox browser and paste the URL
 3. Hover on the `flows_liberty.zip` file, check the checkbox on the right and click the Download icon
 
+![](./images/download.png)
+
 Import the workflows:
 1. In the Concert UI, select the **Workflows** top tab to get to the Concert Workflows page
 2. Click on the **Workflows** tile and then click on the **Import** button
@@ -137,7 +139,7 @@ is only used during remediation.
 
 - **Name:** `sw_update_auth_key`
 - **Service:** `Config Data`
-- **Data:** provide your IBM Fix Central credentials as JSON:
+- **Data:** paste the **IBM Fix Central** credentials JSON snippet shown below:
 
 ```json
 {
@@ -146,15 +148,8 @@ is only used during remediation.
 }
 ```
 
-:::caution
-The Fix Central username and password must be correct, and the account must be
-entitled to download WebSphere fixes. If the credentials are wrong, the
-remediation download will fail later. Because you marked the fields
-**Overridable**, you can correct them in place if needed without recreating the
-authentication.
-:::
 
-### 4.2.3 Execution authentication (non-FaaS) `concert_ansible_auth`
+### 4.2.3 Execution authentication `concert_ansible_auth`
 
 This lets Concert connect to the WebSphere server over SSH using Ansible during
 registration and remediation.
@@ -176,7 +171,7 @@ sudo cat ~/.ssh/id_rsa.pk8
 ```
 
   Paste the contents of the generated key into the **Private
-  key** field. Include both BEGIN and END lines.
+  key** field including both BEGIN and END lines.
 
 - **Inventory:** leave empty
 - **Overridable** make sure you check both checkboxes!
@@ -339,9 +334,9 @@ For each job:
 
 | Name & Workflow | Recommended interval | Cron job expression
 |---|---|---|
-| Websphere_Advisory_Workflow | Every 12 hours | 0 0 */12 ?
-| Websphere_Assessment_Workflow | Every 20 minutes | 0 */20 * ?
-| Monitor_Remediation_Action_Status | Every 5 minutes | 0 */5 * ?
+| Websphere_Advisory_Workflow | Every 12 hours | `0 0 */12 ?`
+| Websphere_Assessment_Workflow | Every 20 minutes | `0 */20 * ?`
+| Monitor_Remediation_Action_Status | Every 5 minutes | `0 */5 * ?`
 
 :::note
 The advisory job must run **before** the assessment job, because the assessment
@@ -357,20 +352,19 @@ keeps the advisory data ahead of the assessments.
 ## 4.7 Register the WebSphere server
 
 :::caution
-Register WebSphere servers only **after** the initial **Websphere advisory job** run completes.
+Register WebSphere servers only **after** the **Websphere advisory job** that you triggered previously completes.
 If you register a server before the advisory data is loaded, Concert will not find any
 CVEs. To see the status of this job, 
 click on the top **Resilience** tab and select **Administration** -> **Event Log** from the left menu, 
 and look for **Websphere advisory job**.
 :::
 
-Concert needs passwordless SSH access to the Liberty target. During
-registration you will retrieve Concert's public key and add it to the target.
+Follow these steps to register the WebSphere Liberty server:
 
 1. In the Concert UI, select the **Resilience** tab on top and select **Inventory** -> **Software inventory** on the left menu
-2. Click **Add software**
-3. Click **Get public key**. Concert displays its public SSH key. We have already added Concert's public key into the Liberty VM ~/.ssh/authorized_keys
-during the Lab Preparation section
+2. Click **Add software inventory**
+3. We have **already added** Concert's public key into the Liberty VM ~/.ssh/authorized_keys
+during the Lab Preparation section. Disregard the steps under **Configure Concert public key**
 
 ![The Get public key dialog in the Add software wizard showing Concert's SSH public key](./images/get-public-key.png)
 
@@ -387,16 +381,17 @@ during the Lab Preparation section
 
 :::caution
 Registration **restarts** the WebSphere Liberty server so it can apply the
-required configuration changes. Expect a brief interruption while it restarts.
+required configuration changes. In a Production environment, this should be done during 
+a maintenance time window.
 :::
 
-:::note
-Register by **hostname**, not by IP address.
-Registration by IP address is not supported in this release
-:::
 
 Concert now discovers the installed WebSphere software and adds the server to
-the software inventory. You can watch progress under **Event logs**.
+the software inventory. After 3-5 minutes, click on the refresh button to see the discovered 
+software. Note that Concert discovered both the JDK and the application server:
+
+* OpenJDK 64-Bit Server VM
+* WebSphere Application Server Liberty Core
 
 ![Software inventory showing the registered WebSphere Liberty server at version 24.0.0.6 along with its discovered OpenJDK runtime](./images/server-registered.png)
 
@@ -404,30 +399,35 @@ the software inventory. You can watch progress under **Event logs**.
 
 ## 4.8 Review the detected vulnerabilities
 
-After the advisory and assessment jobs have run, Concert evaluates the
-registered server and surfaces the CVEs that affect it.
+Now lets review the CVEs that Concert found:
 
-1. In Concert, click the **Resilience** tab on top and select **Dimensions → Vulnerability**
-on the left menu
-2. Review the detected vulnerabilities for the registered server.
-3. Select a vulnerability to see its details: severity, CVSS score,
-   description, affected versions, and the recommended remediation.
-4. Use the **Blast radius** view to see every registered server and component
-   affected by a given vulnerability.
+1. From the same Software inventory page, click on the discovered **WebSphere Application Server Liberty Core**
+2. From the **WebSphere Application Server Liberty Core** page, click on the **Blast radius** tab to see a topology map of the server configuration
 
-For this lab, the assessment surfaces **21 CVEs** (21 findings) affecting the
-Liberty 24.0.0.6 server, ranging from high to low severity. The recommended
-fixpack in the next section resolves the subset of these that has an available
-supported fix.
+![](./images/blast-radius.png)
 
-![Vulnerability view listing the CVEs detected on the registered WebSphere Liberty server](./images/vulnerabilities-detected.png)
+3. Click on the **Infra-components** tab and select the IP address of the Liberty server.
 
-Concert also creates a **remediation action** in the Action Center for the
+![](./images/server-ip.png)
+
+4. Review the detected vulnerabilities for the registered server. Note that 21 CVEs were found.
+
+![](./images/21-CVEs.png)
+
+5. Select a vulnerability (from the **CVE** column) to see its details: Severity, CVSS score, Exploitability factor,
+   Description, etc.
+6. Click on the **Blast radius** tab to see the impact path of this CVE.
+
+![](./images/blast-radius2.png)
+
+
+
+Concert creates a **remediation action** in the **Action Center** for the
 supported fix. You will review, approve, and apply that action in the next
-section.
+section of the Lab.
 
 :::info
-If the assessment hasn't produced findings yet, give the scheduled jobs time to
+If the assessment hasn't produced any CVEs yet, give the scheduled jobs time to
 run, or run **Websphere_Advisory_Workflow** and then
 **Websphere_Assessment_Workflow** manually and wait a few minutes. The advisory
 must run before the assessment.

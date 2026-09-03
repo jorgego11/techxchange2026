@@ -47,19 +47,20 @@ resolves multiple vulnerabilities at once.
 * An **Interim Fix (iFix)** targets
 specific vulnerabilities without moving to the next fixpack level. 
 
-For this lab, we will select a fixpack that is a version below (**26.0.0.7-WS-LIBERTY-CORE-FP**)from the one Concert recommends. This simulates an enterprise scenario 
-where multiple WebSphere servers across the company are all patched at the same fixpack level. This fixpack remediates 11 CVEs.
+For this lab, we will follow the Concert recommendation to apply the **26.0.0.8 Liberty fixpack** so we can 
+remediate all 21 vulnerabilities. Note that Concert also allows to select a different fixpack version or iFix if needed.
 
 On the **Available fixes** page:
-* Check the **26.0.0.7-WS-LIBERTY-CORE-FP** fixpack and notice on the right the list of 11 (3 + 8) CVEs remediated.
-* Click on **Save**
+* Leave the **26.0.0.8-WS-LIBERTY-CORE-FP** fixpack selected.
 * Click on **Approve**
 
 ![](./images/available-fixes.png)
 
 * In the **Schedule and approve this upgrade** dialog, leave the default 
-values and click **Schedule and approve**. You will see a confirmation that the upgrade action was approved successfully,
-and the action status moves to **Approved**.
+values as-is and click **Schedule and approve**. You will see a confirmation that the upgrade action was approved successfully,
+and the action status changes to **Approved**.
+
+![](./images/sched-approve.png)
 
 
 You may remember that in the previous chapter, we have scheduled the 
@@ -68,8 +69,24 @@ looks for Actions with **status=Approved** and when they are found, it schedules
 workflow to apply the fixpack and changes the Action status to **Scheduled**.
 
 
+## 5.3 Confirm Remediation Workflow is Running
 
-## 5.3 Concert applies the fixpack
+If you see the Action status remains as **Scheduled** and does not change to **In progress**, 
+follow these steps: 
+
+Click on the **Workflows** top menu and then on the **Jobs** menu on left side to see 
+the scheduled workflow. Click on the job that refers to Websphere_Remediation_Master
+as shown below:
+
+![](./images/sched-workflow.png)
+
+If you see that the **Starts in** time multiple hours in the future, scroll down and check the **Schedule immediately after saving**
+checkbox and click on **Save**, as shown below. This will force the remediation workflow to start immediately.
+
+![](./images/future-job.png)
+
+
+## 5.4 Concert applies the fixpack
 
 When the scheduled window arrives, Concert automatically carries out the
 remediation:
@@ -85,26 +102,24 @@ remediation:
 
 The remediation runs asynchronously on the target host, so it continues even if you close the browser.
 
-:::caution
-Because the fixpack is downloaded and installed **on the target server**, the
-Liberty server needs `ansible-playbook` installed
-:::
 
-## 5.4 Monitor the remediation
+
+## 5.5 Monitor the remediation
 
 To watch the remediation progress:
 
 1. Go to **Resilience → Action Center**.
 2. Open the action and watch the status move through
-   **Approved → Scheduled → In progress → Success or Failed**.
+   **Approved → Scheduled → In progress → Success (or Failed)**.
 
 Concert records the outcome, the execution details, and a remediation log you
 can open for verification or troubleshooting.
 
 
-## 5.5 Verify the server is patched
+## 5.6 Verify the server is patched
 
-Confirm the remediation actually landed by checking the server directly. Open a **Terminal**
+After the Action status chnged to **Success**, confirm the remediation actually applied the 
+patch by checking the server directly. Open a **Terminal**
 window on the Liberty VM and run:
 
 ```bash
@@ -114,16 +129,16 @@ sudo /opt/IBM/wlp/bin/server version
 You should now see:
 
 ```
-WebSphere Application Server 26.0.0.7 (1.0.115.cl260720260702-0043) on OpenJDK 64-Bit Server VM, version 17.0.20.1+1-LTS (en)
+WebSphere Application Server 26.0.0.8 (1.0.116.cl260820260725-1102) on OpenJDK 64-Bit Server VM, version 17.0.20.1+1-LTS (en)
 ```
 
-The version has moved from **24.0.0.6** to **26.0.0.7**. The fixpack is applied
-and 11 CVEs are remediated.
+The version has moved from **24.0.0.6** to **26.0.0.8**. The fixpack is applied
+and 21 CVEs are remediated.
 
 :::tip
 The server version is the definitive proof that the patch succeeded. The
 version number only changes if the fixpack is actually installed, so a reading of
-`26.0.0.7` confirms the remediation has been applied.
+`26.0.0.8` confirms the remediation has been applied.
 :::
 
 On the Liberty VM, on the same **Terminal** window, run the following command to confirm the downloaded fixpack (about 733 MB) 
@@ -133,7 +148,7 @@ plus its checksum and signature files:
 ls -la /tmp/tempFixes/WebSphere_Application_Server_Liberty_Core/
 ```
 
-## 5.6 Reassess the Host
+## 5.7 Reassess the Liberty Host
 
 After the patch, let Concert reassess the now-patched server so its records
 catch up.
@@ -144,13 +159,15 @@ catch up.
 ### Review the Software Inventory Updates
 
 Click on the **Resilience** tab on top and select **Inventory -> Software Inventory** on the left menu.
-Click on the refresh button (on the right) and note that the new listed version is **26.0.0.7**.
+Click on the refresh button (on the right) and note that the new listed version is **26.0.0.8**.
 
 ![](./images/new_soft-inv.png)
 
+Now, click on the **WebSphere Application Server Liberty Core** and then under the **Infra-components** tab,
+click on the IP address of the Liberty server.
+You will see that where we used to have 21 CVEs listed before the patching, now the **CVE findings** list is empty.
 
-
-
+![](./images/no-vuln.png)
 
 
 

@@ -17,8 +17,8 @@ from registration to a confirmed patch.
 - **Discovered** the software installed on the server.
 - **Assessed** it against IBM WebSphere security advisories and found **21
   CVEs**.
-- **Remediated** the findings by approving and applying a lower than recommended version **26.0.0.7 Liberty fixpack**.
-- **Verified** the server upgraded from 24.0.0.6 to 26.0.0.7, remediating 11 CVEs.
+- **Remediated** the findings by approving and applying the **26.0.0.8 Liberty fixpack**.
+- **Verified** the server upgraded from 24.0.0.6 to 26.0.0.8, remediating 21 CVEs.
 
 ## The vulnerability lifecycle, recapped
 
@@ -31,7 +31,7 @@ from registration to a confirmed patch.
 | Generate action | Created a remediation action |
 | Approve and schedule | You selected the fixpack to apply, approved and scheduled the upgrade. |
 | Remediate | Downloaded the fixpack from Fix Central and applied it via Ansible. |
-| Verify and reassess | Confirmed 26.0.0.7 and reassessed the patched server. |
+| Verify and reassess | Confirmed 26.0.0.8 and reassessed the patched server. |
 
 
 ## What you learned
@@ -54,11 +54,12 @@ Concert repeats it continuously as new advisories are published.
 
 ---
 
-## Lab Troubleshooting Reference
+
+### Lab Troubleshooting Reference
 
 If you run into problems, these are the most common causes and their fixes.
 
-### Registration fails at discovery
+#### Registration fails at discovery
 
 If registration fails with "No WebSphere application servers found" or the
 software inventory stays at 0:
@@ -72,7 +73,7 @@ software inventory stays at 0:
 - Confirm `concert_config_auth` holds the full **Config Data** JSON (host, port,
   instanceId, Authorization, private_key, public_key), not just a key value.
 
-### Scheduling the remediation fails
+#### Scheduling the remediation fails
 
 When configuring `Monitor_Remediation_Action_Status`:
 
@@ -83,7 +84,7 @@ When configuring `Monitor_Remediation_Action_Status`:
   is empty. Set `workflow_auth` to `ibmconcert/workflow_auth` and
   `workflow_user` to `ibmconcert`.
 
-### The remediation action won't re-run
+#### The remediation action won't re-run
 
 If a remediation action is stuck and the scheduled window has already passed:
 
@@ -92,7 +93,7 @@ If a remediation action is stuck and the scheduled window has already passed:
   the future, or run the assessment to generate a fresh action, then approve
   and schedule that one.
 
-### The install fails at the end (return code 2, no output)
+#### The install fails at the end (return code 2, no output)
 
 If the download and authentication succeed but the final install step fails
 instantly:
@@ -110,7 +111,7 @@ instantly:
   dnf install -y ansible-core
   ```
 
-### The fixpack download fails
+#### The fixpack download fails
 
 If the download step produces nothing in `/tmp/tempFixes`:
 
@@ -119,7 +120,7 @@ If the download step produces nothing in `/tmp/tempFixes`:
   WebSphere fixes. Because the fields are **Overridable**, you can correct them
   in place.
 
-### The UI doesn't reflect the patch right away
+#### The UI doesn't reflect the patch right away
 
 After patching, the Action Center or Vulnerability view may lag:
 

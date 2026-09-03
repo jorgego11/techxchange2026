@@ -15,7 +15,7 @@ Please **ignore these prompts** and **do not install any updates** to avoid disr
 
 ## 3.2 Disabling the Terminal Window Timeout
 
-This command comments out the default timeout settings a Terminal window and closes the window. We will do this to keep the
+This command removes the default timeout settings of the Terminal window and then closes the window. We will do this to keep the
 Terminal window open during the Lab. 
 From the **Concert VNC Desktop**, click on the top-left **Activities** button and then on the bottom panel, click **Terminal**.
 
@@ -90,7 +90,9 @@ Save the the **credentials.sh** file and keep the window open.
 
 ## 3.4 Enable Port Forwarding in the Concert VM
 
-Run the commands below on the Concert VM **Terminal** window:
+The Concert Workflows supporting the Liberty patching use SSH tunnel connectivity which 
+requires Port forwarding to be enabled. 
+Run the commands below on the Concert VM **Terminal** window to enable Port forwarding:
 
 ```bash
 sudo tee /etc/ssh/sshd_config.d/00-0-forwarding.conf >/dev/null <<'EOF'
@@ -104,7 +106,24 @@ sudo sshd -T | grep -iE 'disableforwarding|allowtcpforwarding'
 ## 3.5 Copy SSH Public Keys Across the VMs
 
 In order to allow cross SSH connection between the Concert and Liberty VMs, we will
-copy the each other SSH public keys.
+copy each other SSH public keys into the opposite authorized_keys file as shown in the 
+following diagram:
+
+```mermaid
+flowchart TD
+    subgraph VM1["🖥️ Liberty VM"]
+        KP1["~/.ssh/id_rsa<br/>~/.ssh/id_rsa.pub"]
+        AK1["~/.ssh/authorized_keys"]
+    end
+
+    subgraph VM2["🖥️ Concert VM"]
+        KP2["~/.ssh/id_rsa<br/>~/.ssh/id_rsa.pub"]
+        AK2["~/.ssh/authorized_keys"]
+    end
+
+    KP1 -- "appends Liberty pub key" --> AK2
+    KP2 -- "appends Concert pub key" --> AK1
+```
 
 Run the command below on the Concert VM Terminal window: 
 ```bash
