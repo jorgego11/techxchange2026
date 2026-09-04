@@ -94,11 +94,11 @@ In the Concert UI, click **Resilience** in the top navigation bar.
 
 2. A menu of integration types appears — AWS, IBM Cloud, Kubernetes, Google Cloud, and more.
 
-   ![The integration type menu showing all available discovery sources](../6-auto-disc-ocp/images/02-discover-menu.png)
+   ![The integration type menu showing all available discovery sources](images/02-discover-menu.png)
 
 3. Choose **Kubernetes**, then in the **Select an integration** dropdown select **Red Hat OpenShift Container Platform (OCP)**.
 
-   ![The integration type selection with Red Hat OpenShift Container Platform selected](../6-auto-disc-ocp/images/03-select-ocp.png)
+   ![The integration type selection with Red Hat OpenShift Container Platform selected](images/03-select-ocp.png)
 
 4. Leave **Create new connection** selected
       * From the credentials file, open the **Shared Box Note** URL on a new tab in the Firefox browser
@@ -112,7 +112,7 @@ In the Concert UI, click **Resilience** in the top navigation bar.
    | **Token** | `OCP_Token` |
    | **Cluster name** | `OCP_Cluster_Name` |
 
-   ![The OCP credentials entry form with endpoint, token, and cluster name fields](../6-auto-disc-ocp/images/04-enter-credentials.png)
+   ![The OCP credentials entry form with endpoint, token, and cluster name fields](images/04-enter-credentials.png)
 
    :::info What are these three values?
    - **Endpoint** — the cluster's API address: the front door Concert knocks on to communicate with OpenShift.
@@ -140,7 +140,7 @@ In the Concert UI, click **Resilience** in the top navigation bar.
 
 9. Concert begins discovery: it accesses the cluster, pulls the image inventory, and starts the Trivy scan. The screen shows *"Accessing and scanning the cloud…"* with an estimated time.
 
-   ![The discovery progress screen showing the scan in progress](../6-auto-disc-ocp/images/09-discovery-running.png)
+   ![The discovery progress screen showing the scan in progress](images/09-discovery-running.png)
 
 10. Let it load and when it's available, click **Go to the home page** and continue to the next step while the scan runs in the background.
 
@@ -168,7 +168,7 @@ Repeat these steps for **both** the GitHub-discovered application and the OCP-di
    | **Application criticality** | `Very High` |
    | **Data sensitivity** | `Very High` |
 
-   ![The application edit dialog with criticality and data sensitivity set](../6-auto-disc-ocp/images/12-edit-backend.png)
+   ![The application edit dialog with criticality and data sensitivity set](images/12-edit-backend.png)
 
 4. Repeat steps 2 through 3 for the second discovered application.
 
