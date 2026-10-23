@@ -15,10 +15,9 @@ from registration to a confirmed patch.
   scheduled jobs in IBM Concert.
 - **Registered** a WebSphere Liberty 24.0.0.6 server so Concert could manage it.
 - **Discovered** the software installed on the server.
-- **Assessed** it against IBM WebSphere security advisories and found **21
-  CVEs**.
-- **Remediated** the findings by approving and applying the **26.0.0.8 Liberty fixpack**.
-- **Verified** the server upgraded from 24.0.0.6 to 26.0.0.8, remediating 21 CVEs.
+- **Assessed** it against IBM WebSphere security advisories and found multiple CVEs.
+- **Remediated** the findings by approving and applying the **26.0.0.10 Liberty fixpack**.
+- **Verified** the server upgraded from 24.0.0.6 to 26.0.0.10.
 
 ## The vulnerability lifecycle, recapped
 
@@ -27,11 +26,11 @@ from registration to a confirmed patch.
 | Register | Added the Liberty server to the software inventory. |
 | Discover | Inventoried the installed WebSphere software and versions. |
 | Retrieve advisories | Pulled the latest IBM WebSphere security advisories. |
-| Assess | Compared inventory against advisories, found 21 CVEs. |
+| Assess | Compared inventory against advisories, found various CVEs. |
 | Generate action | Created a remediation action |
 | Approve and schedule | You selected the fixpack to apply, approved and scheduled the upgrade. |
 | Remediate | Downloaded the fixpack from Fix Central and applied it via Ansible. |
-| Verify and reassess | Confirmed 26.0.0.8 and reassessed the patched server. |
+| Verify and reassess | Confirmed 26.0.0.10 and reassessed the patched server. |
 
 
 ## What you learned
@@ -126,5 +125,5 @@ After patching, the Action Center or Vulnerability view may lag:
 
 - Concert reassesses on an interval. Give it an assessment cycle, or run
   **Websphere_Assessment_Workflow** and wait. The server version on the target
-  (`26.0.0.8`) is the definitive confirmation that the patch worked.
+  (`26.0.0.10`) is the definitive confirmation that the patch worked.
 

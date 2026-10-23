@@ -28,7 +28,7 @@ server is patched.
    | Recommended version | 26.0.0.10 (Liberty fixpack) |
    | Confidence | High |
    | Reduce risk by | 100% |
-   | CVEs included | 21 |
+
 
 Concert recommends the fixpack that resolves the most CVEs. Here that is the
 **26.0.0.10 Liberty fixpack**.
@@ -47,11 +47,11 @@ resolves multiple vulnerabilities at once.
 * An **Interim Fix (iFix)** targets
 specific vulnerabilities without moving to the next fixpack level. 
 
-For this lab, we will follow the Concert recommendation to apply the **26.0.0.8 Liberty fixpack** so we can 
-remediate all 21 vulnerabilities. Note that Concert also allows to select a different fixpack version or iFix if needed.
+For this lab, we will follow the Concert recommendation to apply the **26.0.0.10 Liberty fixpack** so we can 
+remediate as many vulnerabilities as possible. Note that Concert also allows to select a different fixpack version or iFix if needed.
 
 On the **Available fixes** page:
-* Leave the **26.0.0.8-WS-LIBERTY-CORE-FP** fixpack selected.
+* Leave the **26.0.0.10-WS-LIBERTY-CORE-FP** fixpack selected.
 * Click on **Approve**
 
 ![](./images/available-fixes.png)
@@ -135,16 +135,16 @@ sudo /opt/IBM/wlp/bin/server version
 You should now see:
 
 ```
-WebSphere Application Server 26.0.0.8 (1.0.116.cl260820260725-1102) on OpenJDK 64-Bit Server VM, version 17.0.20.1+1-LTS (en)
+WebSphere Application Server 26.0.0.10 (1.0.118.cl261020260922-1910) on OpenJDK 64-Bit Server VM, version 17.0.20.1+1-LTS (en)
 ```
 
-The version has moved from **24.0.0.6** to **26.0.0.8**. The fixpack is applied
-and 21 CVEs are remediated.
+The version has moved from **24.0.0.6** to **26.0.0.10**. The fixpack is applied
+and the CVEs are remediated.
 
 :::tip
 The server version is the definitive proof that the patch succeeded. The
 version number only changes if the fixpack is actually installed, so a reading of
-`26.0.0.8` confirms the remediation has been applied.
+`26.0.0.10` confirms the remediation has been applied.
 :::
 
 On the Liberty VM, on the same **Terminal** window, run the following command to confirm the downloaded fixpack (about 733 MB) 
@@ -165,13 +165,13 @@ catch up.
 ### Review the Software Inventory Updates
 
 Click on the **Resilience** tab on top and select **Inventory -> Software Inventory** on the left menu.
-Click on the refresh button (on the right) and note that the new listed version is **26.0.0.8**.
+Click on the refresh button (on the right) and note that the new listed version is **26.0.0.10**.
 
 ![](./images/new_soft-inv.png)
 
 Now, click on the **WebSphere Application Server Liberty Core** and then under the **Infra-components** tab,
 click on the IP address of the Liberty server.
-You will see that where we used to have 21 CVEs listed before the patching, now the **CVE findings** list is empty.
+You will see that where we used to have multiple CVEs listed before the patching, now the **CVE findings** list is empty.
 
 ![](./images/no-vuln.png)
 
