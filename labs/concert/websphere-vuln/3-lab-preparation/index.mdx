@@ -76,8 +76,8 @@ liberty_fqdn=<paste-liberty-hostname-here>
 #### Get the Hostnames
 
 From the **Concert VNC Desktop** Terminal window, run the command below, 
-copy its value and paste it after `export concert_fqdn=` in the credentials file.
-Repeat these steps in the **Liberty VNC Desktop** to obtain the Liberty VM hostname.
+copy its value and paste it after `concert_fqdn=` in the credentials file.
+Repeat these steps in the **Liberty VNC Desktop** to obtain the Liberty VM hostname and paste it after `liberty_fqdn`
 
 ```bash
 sudo jq -r '.resources.vsi1_fqdn' /root/post_deploy/post_deploy_variables.json
