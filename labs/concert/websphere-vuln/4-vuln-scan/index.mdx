@@ -108,28 +108,26 @@ To generate a JSON value for the Data field, open a NEW **Terminal** window on t
 
 ```bash
 set -euo pipefail
+FQDN=$(sudo jq -r '.resources.vsi1_fqdn' /root/post_deploy/post_deploy_variables.json)
 PRIVATE_KEY=$(base64 -w 0 ~/.ssh/id_rsa)
 PUBLIC_KEY=$(cat ~/.ssh/id_rsa.pub)
 
 cat <<EOF
-
-
 {
-  "host": "<concert VM fqdn>",
+  "host": "${FQDN}",
   "concert_port": "12443",
   "ssh_port": "2223",
   "instanceId": "0000-0000-0000-0000",
-  "Authorization": "<Concert API Key>",
+  "Authorization": "<paste Concert API Key HERE>",
   "private_key": "${PRIVATE_KEY}",
   "public_key": "${PUBLIC_KEY}"
 }
 EOF
 ```
-Copy the JSON output and paste it into the Data field.
+Copy the JSON output and paste it into the **Data** field.
 
 Finally:
-* Replace the `<concert VM fqdn>` with the concert VM hostname value from **credentials.sh** file
-* Similarly, replace `<Concert API Key>` with the `C_API_KEY aWJtY29...` key value from **credentials.sh** file (make sure not to include `Authorization:` in the value)
+* Similarly, replace `<paste Concert API Key HERE>` with the `C_API_KEY aWJtY29...` key value from **credentials.sh** file (make sure not to include `Authorization:` in the value)
 
 
 ### 4.2.2 Software update authentication `sw_update_auth_key`
